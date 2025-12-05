@@ -1,13 +1,13 @@
 -- 1. Tabla PAIS
 CREATE TABLE PAIS (
-    id INT PRIMARY KEY,               -- #*id
-    nombre VARCHAR(50) NOT NULL,      -- *nombre
-    gentilicio VARCHAR(50) NOT NULL,  -- *gentilicio
-    continente VARCHAR(9) NOT NULL,  -- *continente
-    ue BOOLEAN NOT NULL,              -- *UE
+    id NUMBER PRIMARY KEY,                   -- #*id (NUMBER)
+    nombre VARCHAR2(50) NOT NULL,            -- *nombre (VARCHAR2)
+    gentilicio VARCHAR2(50) NOT NULL,        -- *gentilicio
+    continente VARCHAR2(9) NOT NULL,         -- *continente
+    ue CHAR(1) NOT NULL,                     -- *UE
 
     -- Restricción CHECK para los continentes válidos
-    CONSTRAINT check_continente CHECK (
+    CONSTRAINT chk_pais_continente CHECK (
         continente IN (
             'Africa', 
             'America', 
@@ -16,18 +16,18 @@ CREATE TABLE PAIS (
             'Oceania', 
             'Antartida'
         )
-    )
+    ),
+    -- Restricción CHECK para simular el booleano 'ue' ('S'/'N')
+    CONSTRAINT chk_pais_ue CHECK (ue IN ('S', 'N'))
 );
-
-
 
 
 -- 2. Tabla ESTADO
 -- Depende de PAÍS.
 CREATE TABLE ESTADO (
-    id_pais INT NOT NULL,             -- PK de PAIS (Clave Foránea)
-    id INT NOT NULL,                  -- #*id (PK)
-    nombre VARCHAR(50) NOT NULL,      -- *nombre
+    id_pais NUMBER NOT NULL,             -- PK de PAIS (FK)
+    id NUMBER NOT NULL,                  -- #*id (PK)
+    nombre VARCHAR2(50) NOT NULL,        -- *nombre
 
     -- La clave primaria es compuesta: (id, id_pais)
     PRIMARY KEY (id, id_pais),
@@ -37,20 +37,18 @@ CREATE TABLE ESTADO (
 );
 
 
-
-
 -- 3. Tabla CIUDAD
 -- Depende de ESTADO que a su vez depende de PAÍS.
 CREATE TABLE CIUDAD (
-    -- Componentes heredados del PK de ESTADO (Clave Foránea)
-    id_pais INT NOT NULL,            -- PK de PAÍS
-    id_estado INT NOT NULL,          -- PK de ESTADO
+    -- Componentes heredados del PK de ESTADO (FK)
+    id_pais NUMBER NOT NULL,            -- PK de PAÍS
+    id_estado NUMBER NOT NULL,          -- PK de ESTADO
 
-    id INT NOT NULL,                 -- #*id (PK de CIUDAD)
-    nombre VARCHAR(50) NOT NULL,     -- *nombre
+    id NUMBER NOT NULL,                 -- #*id (PK de CIUDAD)
+    nombre VARCHAR2(50) NOT NULL,       -- *nombre
     
-    -- La clave primaria de Ciudad es compuesta: (id, id_pais, id_estado)
-    PRIMARY KEY (id, id_pais, id_estado),
+    -- La clave primaria de Ciudad es compuesta: (id_pais, id_estado, id)
+    PRIMARY KEY (id_pais, id_estado, id), 
 
     -- Clave Foránea que referencia a la clave compuesta de ESTADO
     CONSTRAINT fk_ciudad_estado FOREIGN KEY (id_pais, id_estado) 
@@ -58,67 +56,59 @@ CREATE TABLE CIUDAD (
 );
 
 
-
-
-
 -- 4. Tabla CLIENTE
 CREATE TABLE CLIENTE (
-    id_lego INT PRIMARY KEY,                  -- #*id lego
-    primer_nombre VARCHAR(50) NOT NULL,       -- *primer nombre
-    primer_apellido VARCHAR(50) NOT NULL,     -- *primer apellido
-    segundo_apellido VARCHAR(50) NOT NULL,    -- *segundo apellido
-    fecha_nacimiento DATE NOT NULL,           -- *fecha de nacimiento
-    dni VARCHAR(20) NOT NULL UNIQUE,          -- *dni
+    id_lego NUMBER PRIMARY KEY,                 -- #*id lego
+    primer_nombre VARCHAR2(50) NOT NULL,        -- *primer nombre
+    primer_apellido VARCHAR2(50) NOT NULL,      -- *primer apellido
+    segundo_apellido VARCHAR2(50) NOT NULL,     -- *segundo apellido
+    fecha_nacimiento DATE NOT NULL,             -- *fecha de nacimiento
+    dni VARCHAR2(20) NOT NULL UNIQUE,           -- *dni
 
     -- Componentes heredados del PK de Pais (Clave Foránea)
-    id_pais_residencia INT NOT NULL,          -- Relación "lugar de residencia"
+    id_pais_residencia NUMBER NOT NULL,         -- Relación "lugar de residencia"
 
-    segundo_nombre VARCHAR(50),               -- O segundo nombre (Opcional)
-    f_venc_pasaporte DATE,                    -- O f. venc. de pasaporte (Opcional)
-    pasaporte VARCHAR(20),                    -- O pasaporte (Opcional)
+    segundo_nombre VARCHAR2(50),                -- O segundo nombre (Opcional)
+    f_venc_pasaporte DATE,                      -- O f. venc. de pasaporte (Opcional)
+    pasaporte VARCHAR2(20),                     -- O pasaporte (Opcional)
 
     CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_residencia) REFERENCES PAIS(id)
 );
 
 
-
-
-
 -- 5. Tabla TIENDA_LEGO
 CREATE TABLE TIENDA_LEGO (
-    id INT PRIMARY KEY,              -- #*id
-    nombre VARCHAR(50) NOT NULL,     -- *nombre
-    calle_av VARCHAR(100) NOT NULL,  -- *calle/av
+    id NUMBER PRIMARY KEY,              -- #*id
+    nombre VARCHAR2(50) NOT NULL,       -- *nombre
+    calle_av VARCHAR2(100) NOT NULL,    -- *calle/av
     
     -- Componentes heredados del PK de CIUDAD (Clave Foránea)
-    id_ciudad INT NOT NULL,          -- Relación "se ubica" (toma la PK compuesta de CIUDAD)
-    id_estado INT NOT NULL,
-    id_pais INT NOT NULL,
-    CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) REFERENCES CIUDAD(id_pais, id_estado, id)
+    id_ciudad NUMBER NOT NULL,          
+    id_estado NUMBER NOT NULL,
+    id_pais NUMBER NOT NULL,
+    
+    -- Referencia a la clave compuesta de CIUDAD.
+    CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) 
+        REFERENCES CIUDAD(id_pais, id_estado, id)
 );
-
-
-
-
-
 
 
 -- 6. Tabla HORARIO_ATENCION
 -- Depende de TIENDA_LEGO.
 CREATE TABLE HORARIO_ATENCION (
-    id_tienda INT NOT NULL,          -- PK de TIENDA_LEGO (Clave Foránea)
-    dia_inicio VARCHAR(10) NOT NULL, -- #*dia inicio
-    hora_entrada DATE NOT NULL,      -- *hora de entrada
-    hora_salida DATE NOT NULL,       -- *hora de salida
+    id_tienda NUMBER NOT NULL,          -- PK de TIENDA_LEGO (FK)
+    dia_inicio VARCHAR2(10) NOT NULL,   -- #*dia inicio
+    hora_entrada DATE NOT NULL,         -- *hora de entrada
+    hora_salida DATE NOT NULL,          -- *hora de salida
 
     -- La clave primaria de HORARIO_ATENCION es compuesta: (id_tienda, dia_inicio)
     PRIMARY KEY (id_tienda, dia_inicio),
 
-    -- Clave Foránea que referencia a la clave compuesta de TIENDA_LEGO
-    CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDA_LEGO(id)
+    -- FK que referencia a la PK de TIENDA_LEGO
+    CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDA_LEGO(id),
 
     -- Restricción CHECK para los dias válidos
-    CONSTRAINT check_dia_inicio CHECK (
+    CONSTRAINT chk_horario_dia CHECK (
         dia_inicio IN (
             'Lunes', 
             'Martes', 
