@@ -8,8 +8,6 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_det_fact NUMBER(8) NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
     tipo_cli VARCHAR2(1) NOT NULL,
-    codigo NUMBER(8) NOT NULL,
-    id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
 );
 
@@ -23,9 +21,6 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
     id_det_fact NUMBER(8) NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
     tipo_cli VARCHAR2(1) NOT NULL,
-    codigo NUMBER(8) NOT NULL,
-    id_tienda NUMBER(8) NOT NULL,
-    nro_lote NUMBER(3) NOT NULL,
     CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
 );
 
@@ -50,6 +45,8 @@ ALTER TABLE DETALLES_INSCRITOS add(
 
 ALTER TABLE DETALLES_FACTURA_ONLINE add(
     nro_fact NUMBER(6) NOT NULL,
+    codigo NUMBER(8) NOT NULL,
+    id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT fk_nfact FOREIGN KEY (nro_fact)
     REFERENCES FACTURAS_ONLINE (nro_fact)
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact)
@@ -67,6 +64,9 @@ ALTER TABLE LOTES_SET_TIENDA add(
 
 ALTER TABLE DETALLES_FACTURA_TIENDA add(
     nro_fact NUMBER(6) NOT NULL,
+    codigo NUMBER(8) NOT NULL,
+    id_tienda NUMBER(8) NOT NULL,
+    nro_lote NUMBER(3) NOT NULL,
     CONSTRAINT fk_nfact FOREIGN KEY (nro_fact)
     REFERENCES FACTURAS_TIENDA (nro_fact)
     CONSTRAINT pk_detfacttnda PRIMARY KEY (nro_fact,id_det_fact)
