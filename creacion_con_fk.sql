@@ -127,54 +127,74 @@ CREATE TABLE FECHAS_TOUR(
 
 CREATE TABLE INSCRIPCIONES_TOUR (
     f_inicio DATE NOT NULL,
-    nro_factura NUMBER(8) NOT NULL,
+    nro_fact NUMBER(8) NOT NULL,
     f_emision DATE NOT NULL,
     estado VARCHAR2(10) NOT NULL,
     total NUMBER(7,2) NOT NULL,
     CONSTRAINT fk_insctour_ftour FOREIGN KEY (f_inicio) REFERENCES FECHAS_TOUR(f_inicio),
-    PRIMARY KEY (f_inicio, nro_factura),
+    CONSTRAINT pk_inscripciones PRIMARY KEY (f_inicio, nro_fact),
     CONSTRAINT chk_statusinsc CHECK (status IN ('PAGADO', 'PENDIENTE'))
 );
 
 ----- VAINAS SAMUEL (POR ARREGLAR)
 
 CREATE TABLE ENTRADAS (
-    nro NUMBER(8) NOT NULL CONSTRAINT pk_entradas PRIMARY KEY,
-    tipo VARCHAR2(1) NOT NULL CHECK('M','A')
+    f_inicio DATE NOT NULL,
+    nro_fact NUMBER(8) NOT NULL,
+    nro NUMBER(8) NOT NULL,
+    tipo VARCHAR2(1) NOT NULL,
+    CONSTRAINT fk_entrada_inscripcion FOREIGN KEY (f_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(id_lego, f_inicio, nro_fact),
+    CONSTRAINT pk_entrada PRIMARY KEY (f_inicio, nro_fact, nro),
+    CONSTRAINT check_tipo_entradas CHECK('M','A')
 );
 
 CREATE TABLE TEMAS(
     id NUMBER(5) CONSTRAINT pk_temas PRIMARY KEY,
     nombre VARCHAR2(20) NOT NULL,
     tipo VARCHAR2(1) NOT NULL CHECK('L','O'),
-    descripcion VARCHAR2(150) NOT NULL
+    descripcion VARCHAR2(150) NOT NULL,
+    id_tema_padre NUMBER(5) CONSTRAINT fk_tema_temapadr FOREIGN KEY REFERENCES TEMAS(id)
 );
 
 CREATE TABLE JUGUETES (
     codigo NUMBER(5) CONSTRAINT pk_juguetes PRIMARY KEY,
     nombre VARCHAR2(20) NOT NULL,
     descripcion VARCHAR2(150) NOT NULL,
-    rgo_edad NOT NULL CHECK('AAAAAAAAAAAAAAAAAA'),
-    rgo_precio NOT NULL CHECK('BBBBBBBBBBBBBBBB'),
-    tipo_lego NOT NULL CHECK('A','AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    id_tema NUMBER(5) NOT NULL,
+    rgo_edad VARCHAR2(3) NOT NULL,
+    rgo_precio VARCHAR2(1) NOT NULL,
+    tipo_lego VARCHAR2(1) NOT NULL,
     "set" BOOLEAN NOT NULL,
     instruc VARCHAR2(200),
-    piezas NUMBER(6)
+    piezas NUMBER(6),
+    CONSTRAINT fk_juguete_tema FOREIGN KEY (id_tema) REFERENCES TEMAS(id),
+    CONSTRAINT check_rgo_edad CHECK(rgo_edad IN ('0A2','3A4','5A6','7A8','9A11','12+','ADULTOS')),
+    CONSTRAINT check_rgo_precio CHECK(rgo_precio IN ('A','B','C','D')),
+    CONSTRAINT check_tipo_lego CHECK(tipo_lego IN ('O','L'))
 );
+----VALIDAR SI HAY PIEZAS O NO 
 
 CREATE TABLE PRODUCTOS_RELACIONADOS (
-    id_producto REFERENCES(codigo) FROM JUGUETES,
-    id_ VARCHAR2(1) NOT NULL CHECK('M','A')
+    id_producto NUMBER(5) CONSTRAINT fk_prodrela_producto REFERENCES(codigo) FROM JUGUETES,
+    id_prod_relaci NUMBER(5) CONSTRAINT fk_prodrela_productorelacion REFERENCES(codigo) FROM JUGUETES
+    CONSTRAINT pk_productos_relacionados PRIMARY KEY (id_producto, id_prod_relaci)
 );
 
-CREATE TABLE HISTORICO_PRECIO_SET_LEGO (
-    f_inicio DATE CONSTRAINT pk_f_inicio PRIMARY KEY,
-    precio NUMBER(5,2),
-    f_fin DATE
+CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
+    cod_juguete NUMBER(5) NOT NULL,
+    f_inicio DATE NOT NULL,
+    precio NUMBER(5,2) NOT NULL,
+    f_fin DATE,
+    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(id)
 );
 
 CREATE TABLE CATALOGO_LEGO (
+    id_pais NUMBER(3) NOT NULL,
+    cod_juguete NUMBER(5) NOT NULL,
     limite NUMBER(5) NOT NULL
+    CONSTRAINT fk_catalogo_pais FOREIGN KEY REFERENCES PAISES(id),
+    CONSTRAINT fk_catalogo_juguete FOREIGN KEY REFERENCES JUGUETES(codigo)
+    CONSTRAINT pk_catalogo PRIMARY KEY (id_pais, cod_juguete)
 );
 
 
