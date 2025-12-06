@@ -51,7 +51,7 @@ CREATE TABLE TIENDAS_LEGO (
     CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) REFERENCES CIUDADES(id_pais, id_estado, id)
 );
 
-CREATE TABLE HORARIO_ATENCION (
+CREATE TABLE HORARIOS_ATENCION (
     id_tienda NUMBER(5) NOT NULL,          
     dia DATE NOT NULL,  
     hora_entr DATE NOT NULL,   

@@ -37,7 +37,7 @@ CREATE TABLE TIENDAS_LEGO (
     direccion VARCHAR2(150) NOT NULL
 );
 
-CREATE TABLE HORARIO_ATENCION (        
+CREATE TABLE HORARIOS_ATENCION (        
     dia DATE NOT NULL,  
     hora_entr DATE NOT NULL,   
     hora_sal DATE NOT NULL
@@ -63,14 +63,14 @@ ALTER TABLE CLIENTES ADD(
     CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id)
 );
 
-ALTER TABLE TIENDA_LEGO ADD(          
+ALTER TABLE TIENDAS_LEGO ADD(          
     id_pais NUMBER NOT NULL,
     id_estado NUMBER NOT NULL,
     id_ciudad NUMBER NOT NULL, 
     CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) REFERENCES CIUDADES(id_pais, id_estado, id)
 );
 
-ALTER TABLE HORARIO_ATENCION ADD(
+ALTER TABLE HORARIOS_ATENCION ADD(
     id_tienda NUMBER(5) NOT NULL,          
     CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
     CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia)
