@@ -8,7 +8,7 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_det_fact NUMBER(8) NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
     tipo_cli VARCHAR2(1) NOT NULL,
-    CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
+    CONSTRAINT tipo_clientefo CHECK (tipo_cli in('M','A'))
 );
 
 CREATE TABLE LOTES_SET_TIENDA(
@@ -21,7 +21,7 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
     id_det_fact NUMBER(8) NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
     tipo_cli VARCHAR2(1) NOT NULL,
-    CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
+    CONSTRAINT tipo_clienteft CHECK (tipo_cli in('M','A'))
 );
 
 --M: MENOR, A:ADULTO

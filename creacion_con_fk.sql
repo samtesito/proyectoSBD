@@ -41,14 +41,14 @@ CREATE TABLE CLIENTES (
     CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id)
 );
 
-CREATE TABLE TIENDA_LEGO (
+CREATE TABLE TIENDAS_LEGO (
     id NUMBER(5) CONSTRAINT pk_tienda PRIMARY KEY, 
     nombre VARCHAR2(20) NOT NULL,       
     direccion VARCHAR2(150) NOT NULL,            
     id_pais NUMBER NOT NULL,
     id_estado NUMBER NOT NULL,
     id_ciudad NUMBER NOT NULL, 
-    CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) REFERENCES CIUDAD(id_pais, id_estado, id)
+    CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) REFERENCES CIUDADES(id_pais, id_estado, id)
 );
 
 CREATE TABLE HORARIO_ATENCION (
@@ -56,7 +56,7 @@ CREATE TABLE HORARIO_ATENCION (
     dia DATE NOT NULL,  
     hora_entr DATE NOT NULL,   
     hora_sal DATE NOT NULL,    
-    CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDA_LEGO(id),
+    CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
     CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia),
     ------- REVISAR
     --CONSTRAINT chk_horario_dia CHECK ("ELLA ES ESE SUEÑO QUE TUVE DESPIERTO, UN RECUERDO LEVE, DE ESTO QUE SIENTO; UNA SACUDIDA, A MIS SALIDAS, LA CIMA DE UN BESO EN UN BRINCO SUICIDA.")
@@ -68,8 +68,8 @@ CREATE TABLE FACTURAS_TIENDA (
     id_tienda NUMBER(5) NOT NULL,
     f_emision DATE NOT NULL,
     total NUMBER(6, 2), 
-    CONSTRAINT fk_facttnda_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTE(id_lego),
-    CONSTRAINT fk_facttnd_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDA_LEGO(id)
+    CONSTRAINT fk_facttnda_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT fk_facttnd_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id)
 );
 ------VALIDAR EL TOTAL
 
@@ -99,9 +99,9 @@ CREATE TABLE TELEFONOS (
     id_visitante NUMBER(8),
     id_tienda NUMBER(5),
     CONSTRAINT pk_tlf PRIMARY KEY (cod_inter, cod_local, numero),
-    CONSTRAINT fk_tlf_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTE(id_lego),
+    CONSTRAINT fk_tlf_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
     CONSTRAINT fk_tlf_visi FOREIGN KEY (id_visitante) REFERENCES VISITANTES_FANS(id_lego),
-    CONSTRAINT fk_tlf_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDA_LEGO(id),
+    CONSTRAINT fk_tlf_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
     CONSTRAINT chk_arco_exclusivo CHECK (
         (id_cliente IS NOT NULL AND id_visitante IS NULL AND id_tienda IS NULL) OR
         (id_cliente IS NULL AND id_visitante IS NOT NULL AND id_tienda IS NULL) OR
@@ -116,7 +116,7 @@ CREATE TABLE FACTURAS_ONLINE (
     id_cliente NUMBER(8) NOT NULL,
     ptos_generados NUMBER(3) NOT NULL,
     total NUMBER(6, 2) NOT NULL,
-    CONSTRAINT fk_factonl_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTE(id_lego)
+    CONSTRAINT fk_factonl_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego)
 );
 
 CREATE TABLE FECHAS_TOUR(
@@ -180,7 +180,7 @@ CREATE TABLE PRODUCTOS_RELACIONADOS (
     CONSTRAINT pk_productos_relacionados PRIMARY KEY (id_producto, id_prod_relaci)
 );
 
-CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
+CREATE TABLE HISTORICO_PRECIO_JUGUETES (
     cod_juguete NUMBER(5) NOT NULL,
     f_inicio DATE NOT NULL,
     precio NUMBER(5,2) NOT NULL,
@@ -223,8 +223,8 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT fk_detfactonl_factonl FOREIGN KEY (nro_fact) REFERENCES FACTURAS_ONLINE (nro_fact),
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact),
-    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGO_LEGO(codigo,id_pais),
-    CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
+    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGOS_LEGO(codigo,id_pais),
+    CONSTRAINT tipo_clientefo CHECK (tipo_cli in('M','A'))
 );
 
 CREATE TABLE LOTES_SET_TIENDA(
@@ -249,12 +249,12 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
     CONSTRAINT fk_detfacttnda_facttnda FOREIGN KEY (nro_fact) REFERENCES FACTURAS_TIENDA (nro_fact),
     CONSTRAINT pk_detfacttnda PRIMARY KEY (nro_fact,id_det_fact),
     CONSTRAINT fk_detfacttnda_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA(codigo,id_tienda,nro_lote),
-    CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
+    CONSTRAINT tipo_clienteft CHECK (tipo_cli in('M','A'))
 );
 
 --M: MENOR, A:ADULTO
 
-CREATE TABLE DESCUENTO(
+CREATE TABLE DESCUENTOS(
     codigo NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
