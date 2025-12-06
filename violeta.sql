@@ -36,30 +36,24 @@ CREATE TABLE DESCUENTO(
 ALTER TABLE DETALLES_INSCRITOS add(
     fecha_inicio DATE NOT NULL,
     nro_factura NUMBER(6) NOT NULL,
-    CONSTRAINT fk_finicio FOREIGN KEY (fecha_inicio) 
-    REFERENCES FECHAS_TOUR (fecha_inicio),
-    CONSTRAINT fk_nrofactura FOREIGN KEY (nro_factura)
-    REFERENCES INSCRIPCIONES_TOUR (nro_factura),
-    CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_factura,id_det_inscritos)
+    CONSTRAINT fk_detinsc_inscripcion FOREIGN KEY (fecha_inicio, nro_factura) REFERENCES INSCRIPCIONES_TOUR(fecha_inicio,nro_factura),
+    CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_factura,id_det_insc)
 );
 
 ALTER TABLE DETALLES_FACTURA_ONLINE add(
     nro_fact NUMBER(6) NOT NULL,
     codigo NUMBER(8) NOT NULL,
     id_pais NUMBER(3) NOT NULL, 
-    CONSTRAINT fk_nfact FOREIGN KEY (nro_fact)
-    REFERENCES FACTURAS_ONLINE (nro_fact)
+    CONSTRAINT fk_detfactonl_factonl FOREIGN KEY (nro_fact) REFERENCES FACTURAS_ONLINE (nro_fact),
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact)
 );
 
 ALTER TABLE LOTES_SET_TIENDA add(
     codigo NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
-    CONSTRAINT fk_codjug FOREIGN KEY (codigo)
-    REFERENCES JUGUETES(codigo)
-    CONSTRAINT fk_idtnda FOREIGN KEY (id_tienda)
-    REFERENCES TIENDAS_LEGO(id)
-    CONSTRAINT pk_lotes(codigo,id_tienda,nrolote)
+    CONSTRAINT fk_lottienda_codjug FOREIGN KEY (codigo) REFERENCES JUGUETES(codigo),
+    CONSTRAINT fk_lottienda_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
+    CONSTRAINT pk_lotes(codigo,id_tienda,nro_lote)
 );
 
 ALTER TABLE DETALLES_FACTURA_TIENDA add(
@@ -67,8 +61,7 @@ ALTER TABLE DETALLES_FACTURA_TIENDA add(
     codigo NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
-    CONSTRAINT fk_nfact FOREIGN KEY (nro_fact)
-    REFERENCES FACTURAS_TIENDA (nro_fact)
+    CONSTRAINT fk_detfacttnda_facttnda FOREIGN KEY (nro_fact) REFERENCES FACTURAS_TIENDA (nro_fact),
     CONSTRAINT pk_detfacttnda PRIMARY KEY (nro_fact,id_det_fact)
 );
 
@@ -76,12 +69,7 @@ ALTER TABLE DESCUENTO add(
     codigo NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
-    CONSTRAINT fk_codigo FOREIGN KEY (codigo)
-    REFERENCES JUGUETES(codigo)
-    CONSTRAINT fk_idtnda FOREIGN KEY (id_tienda)
-    REFERENCES TIENDAS_LEGO(id)
-    CONSTRAINT fk_codigo FOREIGN KEY (nro_lote)
-    REFERENCES LOTES_SET_TIENDA(nro_lote)
+    CONSTRAINT fk_desc_lote FOREING KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (codigo,id_tienda,nro_lote),
     CONSTRAINT pk_iddesc PRIMARY KEY(codigo,id_tienda,nro_lote,id_desc)
 );
 

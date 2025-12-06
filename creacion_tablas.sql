@@ -131,7 +131,7 @@ CREATE TABLE HORARIO_ATENCION (
 
 CREATE TABLE PAISES
     (id NUMBER(3) CONSTRAINT pk_paises PRIMARY KEY,
-    nombre VARCHAR2(15) NOT NULL,
+    nombre VARCHAR2(30) NOT NULL,
     gentilicio VARCHAR2(10) NOT NULL,
     continente VARCHAR2(7) NOT NULL CHECK('AMERICA', 'ASIA', 'AFRICA', 'OCEANIA', 'EUROPA'),
     ue BOOLEAN NOT NULL);
@@ -150,7 +150,7 @@ CREATE TABLE CLIENTES
     prim_ape VARCHAR2(10) NOT NULL,
     seg_ape VARCHAR2(10) NOT NULL,
     f_nacim DATE NOT NULL,
-    dni NUMBER(10) NOT NULL,
+    dni VARCHAR2(10) NOT NULL,
     seg_nom VARCHAR2(10),
     f_vence_pasap DATE,
     pasaporte VARCHAR2(12));
