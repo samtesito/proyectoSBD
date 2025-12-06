@@ -98,7 +98,7 @@ CREATE TABLE TELEFONOS (
     id_cliente NUMBER(8),
     id_visitante NUMBER(8),
     id_tienda NUMBER(5),
-    CONSTRAINT pk_tlf PRIMARY KEY (cod_internacional, cod_local, numero),
+    CONSTRAINT pk_tlf PRIMARY KEY (cod_inter, cod_local, numero),
     CONSTRAINT fk_tlf_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTE(id_lego),
     CONSTRAINT fk_tlf_visi FOREIGN KEY (id_visitante) REFERENCES VISITANTES_FANS(id_lego),
     CONSTRAINT fk_tlf_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDA_LEGO(id),
@@ -133,7 +133,7 @@ CREATE TABLE INSCRIPCIONES_TOUR (
     total NUMBER(7,2) NOT NULL,
     CONSTRAINT fk_insctour_ftour FOREIGN KEY (f_inicio) REFERENCES FECHAS_TOUR(f_inicio),
     CONSTRAINT pk_inscripciones PRIMARY KEY (f_inicio, nro_fact),
-    CONSTRAINT chk_statusinsc CHECK (status IN ('PAGADO', 'PENDIENTE'))
+    CONSTRAINT chk_statusinsc CHECK (estado IN ('PAGADO', 'PENDIENTE'))
 );
 
 ----- VAINAS SAMUEL (POR ARREGLAR)

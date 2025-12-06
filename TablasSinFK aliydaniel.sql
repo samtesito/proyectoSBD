@@ -104,7 +104,7 @@ CREATE TABLE TELEFONOS (
     cod_local NUMBER(4) NOT NULL,
     numero NUMBER(10) NOT NULL,
     tipo VARCHAR2(1) NOT NULL,
-    CONSTRAINT pk_tlf PRIMARY KEY (cod_internacional, cod_local, numero),
+    CONSTRAINT pk_tlf PRIMARY KEY (cod_inter, cod_local, numero),
     CONSTRAINT chk_tipo_telefono CHECK (tipo IN ('F', 'M'))
 );
 
@@ -126,7 +126,7 @@ CREATE TABLE INSCRIPCIONES_TOUR (
     f_emision DATE NOT NULL,
     estado VARCHAR2(10) NOT NULL,
     total NUMBER(7,2) NOT NULL,
-    CONSTRAINT chk_statusinsc CHECK (status IN ('PAGADO', 'PENDIENTE'))
+    CONSTRAINT chk_statusinsc CHECK (estado IN ('PAGADO', 'PENDIENTE'))
 );
 
 --Alteraciones con fk
