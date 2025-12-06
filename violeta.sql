@@ -38,7 +38,7 @@ CREATE TABLE DESCUENTO(
 );
 
 --ALTERACIONES CON CLAVES FORANEAS
-ALTER TABLE DETALLES_INSCRITOS(
+ALTER TABLE DETALLES_INSCRITOS add(
     fecha_inicio DATE NOT NULL,
     nro_factura NUMBER(6) NOT NULL,
     CONSTRAINT fk_finicio FOREIGN KEY (fecha_inicio) 
@@ -48,14 +48,14 @@ ALTER TABLE DETALLES_INSCRITOS(
     CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_factura,id_det_inscritos)
 );
 
-ALTER TABLE DETALLES_FACTURA_ONLINE(
+ALTER TABLE DETALLES_FACTURA_ONLINE add(
     nro_fact NUMBER(6) NOT NULL,
     CONSTRAINT fk_nfact FOREIGN KEY (nro_fact)
     REFERENCES FACTURAS_ONLINE (nro_fact)
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact)
 );
 
-ALTER TABLE LOTES_SET_TIENDA(
+ALTER TABLE LOTES_SET_TIENDA add(
     codigo NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     CONSTRAINT fk_codjug FOREIGN KEY (codigo)
@@ -65,14 +65,14 @@ ALTER TABLE LOTES_SET_TIENDA(
     CONSTRAINT pk_lotes(codigo,id_tienda,nrolote)
 );
 
-ALTER TABLE DETALLES_FACTURA_TIENDA(
+ALTER TABLE DETALLES_FACTURA_TIENDA add(
     nro_fact NUMBER(6) NOT NULL,
     CONSTRAINT fk_nfact FOREIGN KEY (nro_fact)
     REFERENCES FACTURAS_TIENDA (nro_fact)
     CONSTRAINT pk_detfacttnda PRIMARY KEY (nro_fact,id_det_fact)
 );
 
-ALTER TABLE DESCUENTO(
+ALTER TABLE DESCUENTO add(
     codigo NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
