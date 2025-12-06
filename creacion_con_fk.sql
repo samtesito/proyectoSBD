@@ -187,6 +187,8 @@ CREATE TABLE DETALLES_INSCRITOS(
     id_visit NUMBER(8),
     CONSTRAINT fk_detinsc_inscripcion FOREIGN KEY (fecha_inicio, nro_factura) REFERENCES INSCRIPCIONES_TOUR(fecha_inicio,nro_factura),
     CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_factura,id_det_insc),
+    CONSTRAINT fk_detinsc_clien FOREING KEY (id_cliente) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT fk_detinsc_visi FOREING KEY (id_visit) REFERENCES VISITANTES_FANS(id_lego),
     CONSTRAINT chk_arcexcldetinsc CHECK (
         (id_cliente IS NOT NULL AND id_visit IS NULL) OR
         (id_cliente IS NULL AND id_visit IS NOT NULL))
@@ -201,7 +203,7 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT fk_detfactonl_factonl FOREIGN KEY (nro_fact) REFERENCES FACTURAS_ONLINE (nro_fact),
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact),
-    CONSTRAINT fk_detfactonl_nrolote FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGO_LEGO(codigo,id_pais),
+    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGO_LEGO(codigo,id_pais),
     CONSTRAINT tipo_cliente CHECK (tipo_cli in('M','A'))
 );
 
