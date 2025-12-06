@@ -129,7 +129,7 @@ CREATE TABLE INSCRIPCIONES_TOUR (
     f_inicio DATE NOT NULL,
     nro_factura NUMBER(8) NOT NULL,
     f_emision DATE NOT NULL,
-    "status" VARCHAR2(10) NOT NULL,
+    estado VARCHAR2(10) NOT NULL,
     total NUMBER(7,2) NOT NULL,
     CONSTRAINT fk_insctour_ftour FOREIGN KEY (f_inicio) REFERENCES FECHAS_TOUR(f_inicio),
     PRIMARY KEY (f_inicio, nro_factura),
