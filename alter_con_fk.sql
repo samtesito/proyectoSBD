@@ -1,10 +1,79 @@
-ALTER TABLE ESTADOS ADD (
-    ID_PAIS NOT NULL REFERENCES(ID) FROM PAISES,
-    CONSTRAINT pk_estados PRIMARY KEY(ID,ID_PAIS));
+--------------------  TABLAS DE ALI  ----------------------
 
-ALTER TABLE CIUDADES ADD (
-    ID_PAIS NOT NULL REFERENCES(ID) FROM PAISES,
-    ID_ESTADO NOT NULL REFERENCES(ID) FROM ESTADOS,
-    CONSTRAINT pk_estados PRIMARY KEY(ID,ID_PAIS,ID_ESTADO));
+ALTER TABLE ESTADOS ADD(
+    id_pais NUMBER(3) NOT NULL,                  
+    CONSTRAINT fk_estado_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
+    CONSTRAINT pk_estado PRIMARY KEY (id_pais,id)
+);
 
-ALTER 
+ALTER TABLE CIUDADES ADD(
+    id_pais NUMBER(3) NOT NULL,  
+    id_estado NUMBER(5) NOT NULL,             
+    CONSTRAINT fk_ciudad_est FOREIGN KEY (id_pais, id_estado) REFERENCES ESTADOS(id_pais,id),
+    CONSTRAINT pk_ciudad PRIMARY KEY (id_pais, id_estado, id) 
+);
+
+ALTER TABLE CLIENTES ADD(
+    id_pais_resi NUMBER(3) NOT NULL,                           
+    CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id)
+);
+
+ALTER TABLE TIENDAS_LEGO ADD(          
+    id_pais NUMBER NOT NULL,
+    id_estado NUMBER NOT NULL,
+    id_ciudad NUMBER NOT NULL, 
+    CONSTRAINT fk_tienda_ciudad FOREIGN KEY (id_pais, id_estado, id_ciudad) REFERENCES CIUDADES(id_pais, id_estado, id)
+);
+
+ALTER TABLE HORARIOS_ATENCION ADD(
+    id_tienda NUMBER(5) NOT NULL,          
+    CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
+    CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia)
+);
+
+--------------------  TABLAS DE DANIEL ----------------------
+
+ALTER TABLE FACTURAS_TIENDA ADD(
+    id_cliente NUMBER(8) NOT NULL,
+    id_tienda NUMBER(5) NOT NULL,
+    CONSTRAINT fk_facttnda_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT fk_facttnd_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id)
+);
+------VALIDAR EL TOTAL
+
+ALTER TABLE VISITANTES_FANS ADD(
+    id_pais NUMBER(3) NOT NULL,
+    id_repres NUMBER(8),
+    CONSTRAINT fk_visifan_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
+    CONSTRAINT fk_visifan_clien FOREIGN KEY (id_repres) REFERENCES CLIENTES(id_lego)
+    --FOREIGN KEY (id_representante) REFERENCES DET_INSCRITOS(id_lego) -- En esta parte, supuse que la info se sacaba de DET_INSCRITOS
+);
+
+ALTER TABLE TELEFONOS ADD(
+    id_cliente NUMBER(8),
+    id_visitante NUMBER(8),
+    id_tienda NUMBER(5),
+    CONSTRAINT fk_tlf_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT fk_tlf_visi FOREIGN KEY (id_visitante) REFERENCES VISITANTES_FANS(id_lego),
+    CONSTRAINT fk_tlf_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
+    CONSTRAINT chk_arco_exclusivo CHECK (
+        (id_cliente IS NOT NULL AND id_visitante IS NULL AND id_tienda IS NULL) OR
+        (id_cliente IS NULL AND id_visitante IS NOT NULL AND id_tienda IS NULL) OR
+        (id_cliente IS NULL AND id_visitante IS NULL AND id_tienda IS NOT NULL)
+    )
+);
+
+ALTER TABLE FACTURAS_ONLINE ADD(
+    id_cliente NUMBER(8) NOT NULL,
+    CONSTRAINT fk_factonl_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego)
+);
+
+ALTER TABLE INSCRIPCIONES_TOUR ADD(
+    f_inicio DATE NOT NULL,
+    CONSTRAINT fk_insctour_ftour FOREIGN KEY (f_inicio) REFERENCES FECHAS_TOUR(f_inicio),
+    PRIMARY KEY (f_inicio, nro_factura)
+);
+
+--------------------  TABLAS DE SAMUEL ----------------------
+
+--------------------  TABLAS DE VIOLETA ----------------------
