@@ -56,7 +56,7 @@ CREATE TABLE HORARIOS_ATENCION (
     hora_entr DATE NOT NULL,   
     hora_sal DATE NOT NULL,    
     CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
-    CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia),
+    CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia)
     ------- REVISAR
     --CONSTRAINT chk_horario_dia CHECK ("ELLA ES ESE SUEÑO QUE TUVE DESPIERTO, UN RECUERDO LEVE, DE ESTO QUE SIENTO; UNA SACUDIDA, A MIS SALIDAS, LA CIMA DE UN BESO EN UN BRINCO SUICIDA.")
 );
@@ -146,13 +146,13 @@ CREATE TABLE ENTRADAS (
     tipo VARCHAR2(1) NOT NULL,
     CONSTRAINT fk_entrada_inscripcion FOREIGN KEY (f_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(f_inicio, nro_factura),
     CONSTRAINT pk_entrada PRIMARY KEY (f_inicio, nro_fact, nro),
-    CONSTRAINT check_tipo_entradas CHECK('M','A')
+    CONSTRAINT check_tipo_entradas CHECK(tipo IN ('M','A'))
 );
 
 CREATE TABLE TEMAS(
     id NUMBER(5) CONSTRAINT pk_temas PRIMARY KEY,
     nombre VARCHAR2(20) NOT NULL,
-    tipo VARCHAR2(1) NOT NULL CHECK('L','O'),
+    tipo VARCHAR2(1) NOT NULL CHECK(tipo IN ('L','O')),
     descripcion VARCHAR2(150) NOT NULL,
     id_tema_padre NUMBER(5),
     CONSTRAINT fk_tema_temapadr FOREIGN KEY (id_tema_padre) REFERENCES TEMAS(id)
@@ -195,9 +195,9 @@ CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
 CREATE TABLE CATALOGOS_LEGO (
     id_pais NUMBER(3) NOT NULL,
     cod_juguete NUMBER(5) NOT NULL,
-    limite NUMBER(5) NOT NULL
+    limite NUMBER(5) NOT NULL,
     CONSTRAINT fk_catalogo_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
-    CONSTRAINT fk_catalogo_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo)
+    CONSTRAINT fk_catalogo_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo),
     CONSTRAINT pk_catalogo PRIMARY KEY (id_pais, cod_juguete)
 );
 
