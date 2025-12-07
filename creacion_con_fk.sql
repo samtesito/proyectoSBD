@@ -167,6 +167,7 @@ CREATE TABLE JUGUETES (
     rgo_precio VARCHAR2(1) NOT NULL,
     tipo_lego VARCHAR2(1) NOT NULL,
     "set" BOOLEAN NOT NULL,
+    id_setpadre NUMBER(5),
     instruc VARCHAR2(200),
     piezas NUMBER(6),
     CONSTRAINT fk_detalleset FOREIGN KEY (id_setpadre) REFERENCES JUGUETES(codigo),
