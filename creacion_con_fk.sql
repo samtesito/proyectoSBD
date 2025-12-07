@@ -189,7 +189,8 @@ CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
     f_inicio DATE NOT NULL,
     precio NUMBER(5,2) NOT NULL,
     f_fin DATE,
-    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo)
+    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo),
+    CONSTRAINT pk_histprecio PRIMARY KEY (cod_juguete,f_inicio)
 );
 
 CREATE TABLE CATALOGOS_LEGO (
