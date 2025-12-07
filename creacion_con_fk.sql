@@ -144,7 +144,7 @@ CREATE TABLE ENTRADAS (
     nro_fact NUMBER(8) NOT NULL,
     nro NUMBER(8) NOT NULL,
     tipo VARCHAR2(1) NOT NULL,
-    CONSTRAINT fk_entrada_inscripcion FOREIGN KEY (f_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(f_inicio, nro_factura),
+    CONSTRAINT fk_entrada_inscripcion FOREIGN KEY (f_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(f_inicio, nro_fact),
     CONSTRAINT pk_entrada PRIMARY KEY (f_inicio, nro_fact, nro),
     CONSTRAINT check_tipo_entradas CHECK(tipo IN ('M','A'))
 );
@@ -205,12 +205,12 @@ CREATE TABLE CATALOGOS_LEGO (
 
 CREATE TABLE DETALLES_INSCRITOS(
     fecha_inicio DATE NOT NULL,
-    nro_factura NUMBER(6) NOT NULL,
+    nro_fact NUMBER(6) NOT NULL,
     id_det_insc NUMBER(8) NOT NULL,
     id_cliente NUMBER(8),
     id_visit NUMBER(8),
-    CONSTRAINT fk_detinsc_inscripcion FOREIGN KEY (fecha_inicio, nro_factura) REFERENCES INSCRIPCIONES_TOUR(f_inicio,nro_factura),
-    CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_factura,id_det_insc),
+    CONSTRAINT fk_detinsc_inscripcion FOREIGN KEY (fecha_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(f_inicio,nro_fact),
+    CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_fact,id_det_insc),
     CONSTRAINT fk_detinsc_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
     CONSTRAINT fk_detinsc_visi FOREIGN KEY (id_visit) REFERENCES VISITANTES_FANS(id_lego),
     CONSTRAINT chk_arcexcldetinsc CHECK (
