@@ -97,7 +97,7 @@ VALUES (58, 401, 100);
 -- =======================
 
 -- DETALLES_INSCRITOS
-INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_factura, id_det_insc, id_cliente)
+INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_cliente)
 VALUES (TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 600001, 1001);
 
 -- DETALLES_FACTURA_ONLINE
