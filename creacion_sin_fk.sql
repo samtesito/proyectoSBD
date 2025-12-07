@@ -127,7 +127,7 @@ CREATE TABLE PRODUCTOS_RELACIONADOS (
     id_prod_relaci NUMBER(5) NOT NULL
 );
 
-CREATE TABLE HISTORICO_PRECIO_SET_LEGO (
+CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
     f_inicio DATE CONSTRAINT pk_f_inicio PRIMARY KEY,
     precio NUMBER(5,2),
     f_fin DATE
@@ -139,3 +139,34 @@ CREATE TABLE CATALOGOS_LEGO (
 
 --------------------  TABLAS DE VIOLETA ----------------------
 
+CREATE TABLE DETALLES_INSCRITOS(
+    id_det_insc NUMBER(8) NOT NULL
+);
+
+CREATE TABLE DETALLES_FACTURA_ONLINE(
+    id_det_fact NUMBER(8) NOT NULL,
+    cant_prod NUMBER(3) NOT NULL,
+    tipo_cli VARCHAR2(1) NOT NULL,
+    CONSTRAINT tipo_clientefo CHECK (tipo_cli in('M','A'))
+);
+
+CREATE TABLE LOTES_SET_TIENDA(
+    nro_lote NUMBER(3) NOT NULL,
+    f_adqui DATE NOT NULL,
+    cant_prod NUMBER(3) NOT NULL
+);
+
+CREATE TABLE DETALLES_FACTURA_TIENDA(
+    id_det_fact NUMBER(8) NOT NULL,
+    cant_prod NUMBER(3) NOT NULL,
+    tipo_cli VARCHAR2(1) NOT NULL,
+    CONSTRAINT tipo_clienteft CHECK (tipo_cli in('M','A'))
+);
+
+--M: MENOR, A:ADULTO
+
+CREATE TABLE DESCUENTO(
+    id_desc NUMBER(8) NOT NULL,
+    fecha DATE NOT NULL,
+    cant NUMBER(2) NOT NULL
+);

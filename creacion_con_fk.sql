@@ -1,5 +1,4 @@
---Intento de archivo final
---Integracion de claves foraneas en las tablas
+--------------------  TABLAS DE ALI  ----------------------
 
 CREATE TABLE PAISES (
     id NUMBER(3) CONSTRAINT pk_paises PRIMARY KEY,                   
@@ -61,6 +60,8 @@ CREATE TABLE HORARIOS_ATENCION (
     ------- REVISAR
     --CONSTRAINT chk_horario_dia CHECK ("ELLA ES ESE SUEÑO QUE TUVE DESPIERTO, UN RECUERDO LEVE, DE ESTO QUE SIENTO; UNA SACUDIDA, A MIS SALIDAS, LA CIMA DE UN BESO EN UN BRINCO SUICIDA.")
 );
+
+--------------------  TABLAS DE DANIEL ----------------------
 
 CREATE TABLE FACTURAS_TIENDA (
     nro_fact NUMBER(9) CONSTRAINT pk_fact PRIMARY KEY,
@@ -136,14 +137,14 @@ CREATE TABLE INSCRIPCIONES_TOUR (
     CONSTRAINT chk_statusinsc CHECK (estado IN ('PAGADO', 'PENDIENTE'))
 );
 
------ VAINAS SAMUEL (POR ARREGLAR)
+--------------------  TABLAS DE SAMUEL ----------------------
 
 CREATE TABLE ENTRADAS (
     f_inicio DATE NOT NULL,
     nro_fact NUMBER(8) NOT NULL,
     nro NUMBER(8) NOT NULL,
     tipo VARCHAR2(1) NOT NULL,
-    CONSTRAINT fk_entrada_inscripcion FOREIGN KEY (f_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(id_lego, f_inicio, nro_fact),
+    CONSTRAINT fk_entrada_inscripcion FOREIGN KEY (f_inicio, nro_fact) REFERENCES INSCRIPCIONES_TOUR(f_inicio, nro_factura),
     CONSTRAINT pk_entrada PRIMARY KEY (f_inicio, nro_fact, nro),
     CONSTRAINT check_tipo_entradas CHECK('M','A')
 );
@@ -153,7 +154,8 @@ CREATE TABLE TEMAS(
     nombre VARCHAR2(20) NOT NULL,
     tipo VARCHAR2(1) NOT NULL CHECK('L','O'),
     descripcion VARCHAR2(150) NOT NULL,
-    id_tema_padre NUMBER(5) CONSTRAINT fk_tema_temapadr FOREIGN KEY REFERENCES TEMAS(id)
+    id_tema_padre NUMBER(5),
+    CONSTRAINT fk_tema_temapadr FOREIGN KEY (id_tema_padre) REFERENCES TEMAS(id)
 );
 
 CREATE TABLE JUGUETES (
@@ -175,40 +177,42 @@ CREATE TABLE JUGUETES (
 ----VALIDAR SI HAY PIEZAS O NO 
 
 CREATE TABLE PRODUCTOS_RELACIONADOS (
-    id_producto NUMBER(5) CONSTRAINT fk_prodrela_producto REFERENCES(codigo) FROM JUGUETES,
-    id_prod_relaci NUMBER(5) CONSTRAINT fk_prodrela_productorelacion REFERENCES(codigo) FROM JUGUETES
+    id_producto NUMBER(5), 
+    id_prod_relaci NUMBER(5),
+    CONSTRAINT fk_prodrela_producto FOREIGN KEY (id_producto) REFERENCES JUGUETES(codigo),
+    CONSTRAINT fk_prodrela_productorelacion FOREIGN KEY (id_prod_relaci) REFERENCES JUGUETES(codigo),
     CONSTRAINT pk_productos_relacionados PRIMARY KEY (id_producto, id_prod_relaci)
 );
 
-CREATE TABLE HISTORICO_PRECIO_JUGUETES (
+CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
     cod_juguete NUMBER(5) NOT NULL,
     f_inicio DATE NOT NULL,
     precio NUMBER(5,2) NOT NULL,
     f_fin DATE,
-    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(id)
+    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo)
 );
 
-CREATE TABLE CATALOGO_LEGO (
+CREATE TABLE CATALOGOS_LEGO (
     id_pais NUMBER(3) NOT NULL,
     cod_juguete NUMBER(5) NOT NULL,
     limite NUMBER(5) NOT NULL
-    CONSTRAINT fk_catalogo_pais FOREIGN KEY REFERENCES PAISES(id),
-    CONSTRAINT fk_catalogo_juguete FOREIGN KEY REFERENCES JUGUETES(codigo)
+    CONSTRAINT fk_catalogo_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
+    CONSTRAINT fk_catalogo_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo)
     CONSTRAINT pk_catalogo PRIMARY KEY (id_pais, cod_juguete)
 );
 
+--------------------  TABLAS DE VIOLETA ----------------------
 
----Violeta
 CREATE TABLE DETALLES_INSCRITOS(
     fecha_inicio DATE NOT NULL,
     nro_factura NUMBER(6) NOT NULL,
     id_det_insc NUMBER(8) NOT NULL,
     id_cliente NUMBER(8),
     id_visit NUMBER(8),
-    CONSTRAINT fk_detinsc_inscripcion FOREIGN KEY (fecha_inicio, nro_factura) REFERENCES INSCRIPCIONES_TOUR(fecha_inicio,nro_factura),
+    CONSTRAINT fk_detinsc_inscripcion FOREIGN KEY (fecha_inicio, nro_factura) REFERENCES INSCRIPCIONES_TOUR(f_inicio,nro_factura),
     CONSTRAINT pk_detinscritos PRIMARY KEY (fecha_inicio,nro_factura,id_det_insc),
-    CONSTRAINT fk_detinsc_clien FOREING KEY (id_cliente) REFERENCES CLIENTES(id_lego),
-    CONSTRAINT fk_detinsc_visi FOREING KEY (id_visit) REFERENCES VISITANTES_FANS(id_lego),
+    CONSTRAINT fk_detinsc_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT fk_detinsc_visi FOREIGN KEY (id_visit) REFERENCES VISITANTES_FANS(id_lego),
     CONSTRAINT chk_arcexcldetinsc CHECK (
         (id_cliente IS NOT NULL AND id_visit IS NULL) OR
         (id_cliente IS NULL AND id_visit IS NOT NULL))
@@ -223,7 +227,7 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT fk_detfactonl_factonl FOREIGN KEY (nro_fact) REFERENCES FACTURAS_ONLINE (nro_fact),
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact),
-    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGOS_LEGO(codigo,id_pais),
+    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGOS_LEGO(cod_juguete,id_pais),
     CONSTRAINT tipo_clientefo CHECK (tipo_cli in('M','A'))
 );
 
@@ -261,6 +265,6 @@ CREATE TABLE DESCUENTOS(
     id_desc NUMBER(8) NOT NULL,
     fecha DATE NOT NULL,
     cant NUMBER(2) NOT NULL,
-    CONSTRAINT fk_desc_lote FOREING KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (codigo,id_tienda,nro_lote),
+    CONSTRAINT fk_desc_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (codigo,id_tienda,nro_lote),
     CONSTRAINT pk_iddesc PRIMARY KEY(codigo,id_tienda,nro_lote,id_desc)
 );
