@@ -163,7 +163,7 @@ CREATE TABLE JUGUETES (
     nombre VARCHAR2(20) NOT NULL,
     descripcion VARCHAR2(150) NOT NULL,
     id_tema NUMBER(5) NOT NULL,
-    rgo_edad VARCHAR2(3) NOT NULL,
+    rgo_edad VARCHAR2(7) NOT NULL,
     rgo_precio VARCHAR2(1) NOT NULL,
     tipo_lego VARCHAR2(1) NOT NULL,
     "set" BOOLEAN NOT NULL,
