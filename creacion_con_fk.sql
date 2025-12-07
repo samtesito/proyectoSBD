@@ -169,6 +169,7 @@ CREATE TABLE JUGUETES (
     "set" BOOLEAN NOT NULL,
     instruc VARCHAR2(200),
     piezas NUMBER(6),
+    CONSTRAINT fk_detalleset FOREIGN KEY (id_setpadre) REFERENCES JUGUETES(codigo),
     CONSTRAINT fk_juguete_tema FOREIGN KEY (id_tema) REFERENCES TEMAS(id),
     CONSTRAINT check_rgo_edad CHECK(rgo_edad IN ('0A2','3A4','5A6','7A8','9A11','12+','ADULTOS')),
     CONSTRAINT check_rgo_precio CHECK(rgo_precio IN ('A','B','C','D')),
