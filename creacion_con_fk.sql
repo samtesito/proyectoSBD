@@ -37,7 +37,8 @@ CREATE TABLE CLIENTES (
     seg_nom VARCHAR2(10),               
     pasaporte VARCHAR2(20),
     f_venc_pasap DATE,                     
-    CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id)
+    CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id),
+    CONSTRAINT chk_cliente_pasaporte CHECK (pasaporte IS NULL OR f_venc_pasap IS NOT NULL)
 );
 
 CREATE TABLE TIENDAS_LEGO (
@@ -87,7 +88,8 @@ CREATE TABLE VISITANTES_FANS (
     f_venc_pasap DATE,
     pasaporte VARCHAR2(15),
     CONSTRAINT fk_visifan_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
-    CONSTRAINT fk_visifan_clien FOREIGN KEY (id_repres) REFERENCES CLIENTES(id_lego)
+    CONSTRAINT fk_visifan_clien FOREIGN KEY (id_repres) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT chk_visitante_pasaporte CHECK (pasaporte IS NULL OR f_venc_pasap IS NOT NULL)
     --FOREIGN KEY (id_representante) REFERENCES DET_INSCRITOS(id_lego) -- En esta parte, supuse que la info se sacaba de DET_INSCRITOS
 );
 
