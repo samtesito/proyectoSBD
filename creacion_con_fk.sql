@@ -37,7 +37,8 @@ CREATE TABLE CLIENTES (
     seg_nom VARCHAR2(10),               
     pasaporte VARCHAR2(20),
     f_venc_pasap DATE,                     
-    CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id)
+    CONSTRAINT fk_cliente_pais FOREIGN KEY (id_pais_resi) REFERENCES PAISES(id),
+    CONSTRAINT chk_cliente_pasaporte CHECK (pasaporte IS NULL OR f_venc_pasap IS NOT NULL)
 );
 
 CREATE TABLE TIENDAS_LEGO (
@@ -87,7 +88,8 @@ CREATE TABLE VISITANTES_FANS (
     f_venc_pasap DATE,
     pasaporte VARCHAR2(15),
     CONSTRAINT fk_visifan_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
-    CONSTRAINT fk_visifan_clien FOREIGN KEY (id_repres) REFERENCES CLIENTES(id_lego)
+    CONSTRAINT fk_visifan_clien FOREIGN KEY (id_repres) REFERENCES CLIENTES(id_lego),
+    CONSTRAINT chk_visitante_pasaporte CHECK (pasaporte IS NULL OR f_venc_pasap IS NOT NULL)
 );
 
 CREATE TABLE TELEFONOS (
@@ -162,12 +164,14 @@ CREATE TABLE JUGUETES (
     nombre VARCHAR2(20) NOT NULL,
     descripcion VARCHAR2(150) NOT NULL,
     id_tema NUMBER(5) NOT NULL,
-    rgo_edad VARCHAR2(3) NOT NULL,
+    rgo_edad VARCHAR2(7) NOT NULL,
     rgo_precio VARCHAR2(1) NOT NULL,
     tipo_lego VARCHAR2(1) NOT NULL,
     "set" BOOLEAN NOT NULL,
+    id_setpadre NUMBER(5),
     instruc VARCHAR2(200),
     piezas NUMBER(6),
+    CONSTRAINT fk_detalleset FOREIGN KEY (id_setpadre) REFERENCES JUGUETES(codigo),
     CONSTRAINT fk_juguete_tema FOREIGN KEY (id_tema) REFERENCES TEMAS(id),
     CONSTRAINT check_rgo_edad CHECK(rgo_edad IN ('0A2','3A4','5A6','7A8','9A11','12+','ADULTOS')),
     CONSTRAINT check_rgo_precio CHECK(rgo_precio IN ('A','B','C','D')),
@@ -188,7 +192,8 @@ CREATE TABLE HISTORICO_PRECIOS_JUGUETES (
     f_inicio DATE NOT NULL,
     precio NUMBER(5,2) NOT NULL,
     f_fin DATE,
-    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo)
+    CONSTRAINT fk_histprecio_juguete FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo),
+    CONSTRAINT pk_histprecio PRIMARY KEY (cod_juguete,f_inicio)
 );
 
 CREATE TABLE CATALOGOS_LEGO (
