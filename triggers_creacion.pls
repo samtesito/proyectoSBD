@@ -144,7 +144,7 @@ BEGIN
     SELECT cupos INTO capacidad_tour FROM FECHAS_TOUR 
     WHERE f_inicio=fecha_insc;
     cant_cupos_disp := capacidad_tour - cant_insc_en_fecha;
-    IF cant_cupos_disp < 0 THEN 
+    IF cant_cupos_disp <= 0 THEN 
     RAISE_APPLICATION_ERROR(-20010, 
         'Error: Exceso de cupos para la fecha ' || TO_CHAR(fecha_insc, 'DD-MON-YYYY') || 
         '- Cupos Máximos: ' || capacidad_tour || 
