@@ -118,6 +118,14 @@ VALUES (500001, 80001, 3, 'M', 401, 10, 301);
 INSERT INTO DESCUENTOS (codigo, id_tienda, nro_lote, id_desc, fecha, cant)
 VALUES (401, 10, 301, 90001, TO_DATE('2025-12-05','YYYY-MM-DD'), 15);
 
+
+--INSERTS PROBADOS: CUPO
+INSERT INTO FECHAS_TOUR VALUES('22-12-26',20,1);
+INSERT INTO INSCRIPCIONES_TOUR VALUES('22-12-26',250,'08-12-25','PENDIENTE',0);
+--DEBEN ESTAR LOS VISITANTES ANTES, ESTOS EN LA PRUEBA NO NECESITABAN REPRESENTANTE
+INSERT INTO DETALLES_INSCRITOS(fecha_inicio,nro_fact, id_det_insc,id_visit) VALUES('22-12-26',250,40,2001);
+INSERT INTO DETALLES_INSCRITOS(fecha_inicio,nro_fact, id_det_insc,id_visit) VALUES('22-12-26',250,98,2003);
+
 ------------------------------------------------------------
 -- FIN DEL SCRIPT DE DATOS DE PRUEBA
 ------------------------------------------------------------
