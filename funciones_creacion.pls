@@ -1,0 +1,5 @@
+CREATE OR REPLACE FUNCTION edad (fec_nac DATE) RETURN NUMBER IS
+BEGIN 
+    RETURN(ROUND(((sysdate-fec_nac)/365),0));
+END;
+

@@ -88,7 +88,6 @@ CREATE TABLE VISITANTES_FANS (
     pasaporte VARCHAR2(15),
     CONSTRAINT fk_visifan_pais FOREIGN KEY (id_pais) REFERENCES PAISES(id),
     CONSTRAINT fk_visifan_clien FOREIGN KEY (id_repres) REFERENCES CLIENTES(id_lego)
-    --FOREIGN KEY (id_representante) REFERENCES DET_INSCRITOS(id_lego) -- En esta parte, supuse que la info se sacaba de DET_INSCRITOS
 );
 
 CREATE TABLE TELEFONOS (
@@ -131,7 +130,7 @@ CREATE TABLE INSCRIPCIONES_TOUR (
     nro_fact NUMBER(8) NOT NULL,
     f_emision DATE NOT NULL,
     estado VARCHAR2(10) NOT NULL,
-    total NUMBER(7,2) NOT NULL,
+    total NUMBER(7,2),
     CONSTRAINT fk_insctour_ftour FOREIGN KEY (f_inicio) REFERENCES FECHAS_TOUR(f_inicio),
     CONSTRAINT pk_inscripciones PRIMARY KEY (f_inicio, nro_fact),
     CONSTRAINT chk_statusinsc CHECK (estado IN ('PAGADO', 'PENDIENTE'))
