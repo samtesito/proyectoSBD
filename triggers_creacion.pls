@@ -125,9 +125,6 @@ BEGIN
 END;
 /
 
-
-
-
 -- TRIGGER cant cupos disponibles
 CREATE OR REPLACE TRIGGER trg_cupos_disponibles
 BEFORE INSERT ON DETALLES_INSCRITOS
@@ -144,13 +141,80 @@ BEGIN
     SELECT cupos INTO capacidad_tour FROM FECHAS_TOUR 
     WHERE f_inicio=fecha_insc;
     cant_cupos_disp := capacidad_tour - cant_insc_en_fecha;
-    IF cant_cupos_disp < 0 THEN 
-    RAISE_APPLICATION_ERROR(-20010, 
+    IF cant_cupos_disp <= 0 THEN 
+    RAISE_APPLICATION_ERROR(-20009, 
         'Error: Exceso de cupos para la fecha ' || TO_CHAR(fecha_insc, 'DD-MON-YYYY') || 
         '- Cupos Máximos: ' || capacidad_tour || 
         '- Inscritos Actuales: ' || cant_insc_en_fecha);
     END IF;
 END;
+/
+
+
+
+-- TRIGGER limite catálogo online
+
+CREATE OR REPLACE TRIGGER trg_limite_catalogo_online
+BEFORE INSERT ON DETALLES_FACTURA_ONLINE
+FOR EACH ROW
+DECLARE
+    v_limite NUMBER(5);
+    v_cant_actual NUMBER(3) := 0;
+    v_total_cant NUMBER(3);
+BEGIN
+    -- Obtener límite del catálogo para este país/juguete
+    SELECT limite INTO v_limite
+    FROM CATALOGOS_LEGO
+    WHERE id_pais = :NEW.id_pais AND cod_juguete = :NEW.codigo;
+    
+    -- Sumar cantidades existentes en esta factura para este producto
+    SELECT COALESCE(SUM(cant_prod), 0) INTO v_cant_actual
+    FROM DETALLES_FACTURA_ONLINE
+    WHERE nro_fact = :NEW.nro_fact 
+    AND codigo = :NEW.codigo 
+    AND id_pais = :NEW.id_pais;
+    
+    -- Total proyectado
+    v_total_cant := v_cant_actual + :NEW.cant_prod;
+    
+    -- Validar límite
+    IF v_total_cant > v_limite THEN
+        RAISE_APPLICATION_ERROR(-20010, 
+            'Excede límite catálogo: ' || v_total_cant || ' > ' || v_limite || 
+            ' para código ' || :NEW.codigo || ' en país ' || :NEW.id_pais);
+    END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Producto no disponible en catálogo para país ' || :NEW.id_pais);
+END;
+/
+
+
+
+
+
+
+
+--- TRIGGER validar lote pertenece a catálogo
+
+CREATE OR REPLACE TRIGGER tgr_lote_en_catalogo 
+BEFORE INSERT OR UPDATE OF cod_juguete ON LOTES_SET_TIENDA 
+FOR EACH ROW 
+DECLARE
+    v_pais_tienda NUMBER(3);
+    v_exist_catalogo BOOLEAN;
+BEGIN  
+    SELECT id_pais INTO v_pais_tienda FROM TIENDAS_LEGO WHERE id = :NEW.id_tienda;
+    SELECT CASE WHEN EXISTS(
+        SELECT * FROM CATALOGOS_LEGO 
+        WHERE id_pais = v_pais_tienda AND cod_juguete = :NEW.cod_juguete) 
+        THEN 0 ELSE 1 END
+    INTO v_exist_catalogo;
+    IF v_exist_catalogo THEN 
+        RAISE_APPLICATION_ERROR(-20012, 'El lote que se quiere registrar pertenece a un juguete/set que no está disponible en el país de la tienda.');
+    END IF;
+END;
+/
 
 -- ALTERRRRRRRR----------------------------------------------------------------------
 
