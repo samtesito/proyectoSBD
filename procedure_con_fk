@@ -1,1 +1,15 @@
-
+--1.0 PROCEDIMIENTO PARA INSERTAR PRECIOS
+CREATE OR REPLACE PROCEDURE insertar_nuevo_precio (
+    p_cod_juguete  IN HISTORICO_PRECIOS_JUGUETES.cod_juguete%TYPE,
+    p_f_inicio     IN HISTORICO_PRECIOS_JUGUETES.f_inicio%TYPE,
+    p_precio       IN HISTORICO_PRECIOS_JUGUETES.precio%TYPE
+) IS
+BEGIN
+    UPDATE HISTORICO_PRECIOS_JUGUETES
+    SET f_fin = p_f_inicio
+    WHERE cod_juguete = p_cod_juguete
+    AND f_fin IS NULL;
+    INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin)
+    VALUES (p_cod_juguete, p_f_inicio, p_precio, NULL);
+END;
+/
