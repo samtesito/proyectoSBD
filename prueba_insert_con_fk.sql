@@ -79,6 +79,8 @@ VALUES (301, 'Arquitectura', 'L', 'Sets inspirados en arquitectura venezolana co
 -- JUGUETES
 INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", instruc, piezas)
 VALUES (401, 'Arepa LEGO', 'Set temático inspirado en la gastronomía venezolana', 301, '5A6', 'B', 'L', TRUE, 'Incluye instrucciones ilustradas', 150);
+INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", instruc, piezas)
+VALUES (402, 'Cachapa LEGO', 'Otro set tematico inspirado en la gastronomia venezolana', 301, '5A6', 'B', 'L', TRUE, 'Incluye instrucciones numeradas', 300);
 
 -- PRODUCTOS_RELACIONADOS
 INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci)
@@ -105,7 +107,7 @@ INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli,
 VALUES (700001, 70001, 2, 'A', 401, 58);
 
 -- LOTES_SET_TIENDA
-INSERT INTO LOTES_SET_TIENDA (codigo, id_tienda, nro_lote, f_adqui, cant_prod)
+INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod)
 VALUES (401, 10, 301, TO_DATE('2025-10-15','YYYY-MM-DD'), 30);
 
 -- DETALLES_FACTURA_TIENDA

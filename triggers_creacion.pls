@@ -100,10 +100,20 @@ END;
 
 
 
+--Creo es un procedimento para actualizar la fecha fin del historico de precios
+-- 1.5. Update fecha fin historico precios automatico
+-- Regla: Cuando se inserte un precio nuevo al producto se cierra el fecha_fin del precio antiguo.
+CREATE OR REPLACE TRIGGER trg_historial_precios_auto
+BEFORE UPDATE OF precio ON HISTORICO_PRECIOS_JUGUETES
+FOR EACH ROW
+BEGIN
+:NEW.f_fin := SYSDATE;
+END;
+/
 
 
--- TRIGGER fecha_inicio<=fecha_fin
-
+-- 1.6. Validacion fechas historial precios
+-- Regla: La fecha fin de historico precio no puede ser menor a la fecha inicio.
 CREATE OR REPLACE TRIGGER trg_historial_precios
 BEFORE INSERT OR UPDATE ON HISTORICO_PRECIOS_JUGUETES
 FOR EACH ROW
@@ -116,16 +126,9 @@ END;
 
 
 
--- Trigger SIMPLE (solo marca f_fin) ESTE SIIII DEFINITIVOOOO
-CREATE OR REPLACE TRIGGER trg_historial_precios_auto
-BEFORE UPDATE OF precio ON HISTORICO_PRECIOS_JUGUETES
-FOR EACH ROW
-BEGIN
-:NEW.f_fin := SYSDATE;
-END;
-/
 
--- TRIGGER cant cupos disponibles
+-- 1.7. Validacion cupos disponibles tour
+-- Regla: Verificar que en la inscripcion no se excedan los cupos disponibles para la fecha del tour.
 CREATE OR REPLACE TRIGGER trg_cupos_disponibles
 BEFORE INSERT ON DETALLES_INSCRITOS
 FOR EACH ROW
@@ -151,9 +154,8 @@ END;
 /
 
 
-
--- TRIGGER limite catálogo online
-
+-- 1.8. Validacion limite catálogo online
+-- Regla: No exceder el límite de cantidad por catálogo online al insertar detalles de factura online.
 CREATE OR REPLACE TRIGGER trg_limite_catalogo_online
 BEFORE INSERT ON DETALLES_FACTURA_ONLINE
 FOR EACH ROW
@@ -194,9 +196,8 @@ END;
 
 
 
-
---- TRIGGER validar lote pertenece a catálogo
-
+-- 1.9. Validacion lote en catálogo
+-- Regla: El lote que se quiere registrar pertenece a un juguete/set que está disponible en el país de la tienda.
 CREATE OR REPLACE TRIGGER tgr_lote_en_catalogo 
 BEFORE INSERT OR UPDATE OF cod_juguete ON LOTES_SET_TIENDA 
 FOR EACH ROW 
@@ -215,13 +216,3 @@ BEGIN
     END IF;
 END;
 /
-
--- ALTERRRRRRRR----------------------------------------------------------------------
-
-ALTER TABLE CLIENTES
-ADD CONSTRAINT chk_cliente_pasaporte
-CHECK (pasaporte IS NULL OR f_venc_pasap IS NOT NULL);
-
-ALTER TABLE VISITANTES_FANS 
-ADD CONSTRAINT chk_visitante_pasaporte 
-CHECK (pasaporte IS NULL OR f_venc_pasap IS NOT NULL);

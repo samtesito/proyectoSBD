@@ -236,14 +236,14 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
 );
 
 CREATE TABLE LOTES_SET_TIENDA(
-    codigo NUMBER(8) NOT NULL,
+    cod_juguete NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
     f_adqui DATE NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
-    CONSTRAINT fk_lottienda_codjug FOREIGN KEY (codigo) REFERENCES JUGUETES(codigo),
+    CONSTRAINT fk_lottienda_codjug FOREIGN KEY (cod_juguete) REFERENCES JUGUETES(codigo),
     CONSTRAINT fk_lottienda_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
-    CONSTRAINT pk_lotes PRIMARY KEY (codigo,id_tienda,nro_lote)
+    CONSTRAINT pk_lotes PRIMARY KEY (cod_juguete,id_tienda,nro_lote)
 );
 
 CREATE TABLE DETALLES_FACTURA_TIENDA(
