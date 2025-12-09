@@ -266,7 +266,7 @@ END;
 
 
 
--- 1.12. Validar que no se genere una entrada en una inscripcion que no esta confirmada
+-- 1.12. Validar que no se genere una entrada en una inscripcion que no esta confirmada --
 -- Regla: no se inserta fila en ENTRADAS si la status en inscripcion != PAGADO
 CREATE OR REPLACE TRIGGER trg_entrada_solo_si_insc_conf
 BEFORE INSERT ON ENTRADAS FOR EACH ROW
@@ -276,3 +276,77 @@ BEGIN
     
 END;
 /
+
+
+
+
+
+
+-- 1.13. Verifica que haya stock virtual disponible al comprar
+-- Regla: No se puede comprar mas productos de los que hay disponibles
+CREATE OR REPLACE TRIGGER TRG_VALIDAR_STOCK_DIARIO
+BEFORE INSERT ON DETALLES_FACTURA_TIENDA
+FOR EACH ROW
+DECLARE
+    v_stock_fisico  NUMBER;
+    v_vendido_hoy   NUMBER;
+    v_disponible    NUMBER;
+BEGIN
+    -- 1. Obtener el stock fisico que marca la tabla (este numero NO cambia durante el dia)
+    SELECT cant_prod
+    INTO v_stock_fisico
+    FROM LOTES_SET_TIENDA
+    WHERE cod_juguete = :NEW.codigo
+      AND id_tienda = :NEW.id_tienda
+      AND nro_lote = :NEW.nro_lote;
+
+    -- 2. Calcular cuanto se ha "comprometido" o vendido ya durante el dia
+    v_vendido_hoy := FUNC_TOTAL_VENTAS_LOTE_DIA(:NEW.id_tienda, :NEW.codigo, :NEW.nro_lote);
+
+    -- 3. Calcular disponibilidad real
+    -- Disponible = Lo que habia al amanecer - Lo vendido hoy
+    v_disponible := v_stock_fisico - v_vendido_hoy;
+
+    -- 4. VALIDAR: ¿Hay espacio para la nueva venta (:NEW.cant_prod)?
+    IF v_disponible < :NEW.cant_prod THEN
+        RAISE_APPLICATION_ERROR(-20017, 
+            'Stock Insuficiente (Calculo Diario). ' ||
+            'Stock Inicial: ' || v_stock_fisico || 
+            ', Vendido Hoy: ' || v_vendido_hoy || 
+            ', Restante: ' || v_disponible || 
+            '. Intentas comprar: ' || :NEW.cant_prod);
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20018, 'El lote o producto no existe en el inventario.');
+END;
+/
+
+
+--1.14 Facturas no se pueden eliminar
+
+-- Para facturas físicas
+CREATE OR REPLACE TRIGGER trg_no_delete_fact_tienda
+BEFORE DELETE ON FACTURAS_TIENDA
+FOR EACH ROW
+BEGIN
+    RAISE_APPLICATION_ERROR(-20501, 'Las facturas físicas no se pueden eliminar');
+END;
+/
+
+-- Para facturas online
+CREATE OR REPLACE TRIGGER trg_no_delete_fact_online
+BEFORE DELETE ON FACTURAS_ONLINE
+FOR EACH ROW
+BEGIN
+    RAISE_APPLICATION_ERROR(-20502, 'Las facturas online no se pueden eliminar');
+END;
+/
+
+
+
+
+
+
+

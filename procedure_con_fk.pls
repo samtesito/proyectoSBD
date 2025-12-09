@@ -15,80 +15,34 @@ END;
 /
 
 
+
 --1.1 PROCEDIMIENTO PARA GENERAR ENTRADAS
+
+CREATE SEQUENCE id_entrada
+    INCREMENT BY 1
+    START WITH 0;
+
 CREATE OR REPLACE PROCEDURE generar_entradas(
     f_tour IN INSCRIPCIONES_TOUR.f_inicio%TYPE,
     n_fact IN INSCRIPCIONES_TOUR.f_inicio%TYPE
 ) IS
-DECLARE
-    cant_insc NUMBER;
-    cont NUMBER;
-    id_cli DETALLES_INSCRITOS.id_cliente%TYPE,
-    id_vis DETALLES_INSCRITOS.id_visit%TYPE,
-    tipoE ENTRADAS.tipo%TYPE
-BEGIN
-    SELECT COUNT(*) INTO cant_insc FROM DETALLES_INSCRITOS
-    WHERE fecha_inicio=f_tour AND nro_fact=n_fact;
-    FOR i IN 1..cant_insc
-    LOOP
-        SELECT id_cliente, id_visit INTO id_cli, id_vis 
-        FROM DETALLES_INSCRITOS WHERE fecha_inicio=f_tour
-        AND nro_fact=n_fact AND id_det_insc=i;
-        IF id_cli IS NULL THEN
-            tipoE := 'A';
-            INSERT INTO ENTRADAS(fecha_inicio,nro_fact,i,tipo) VALUES(f_tour,nro_fact,i,tipoE);
-        ELSIF id_vis IS NULL THEN
-            tipoE := 'M';
-            INSERT INTO ENTRADAS(fecha_inicio,nro_fact,i,tipo) VALUES(f_tour,nro_fact,i,i,tipoE);
-        END IF
-    END LOOP;
-END;
-/
-
--- INTENTO DE SAMUEL 
-
-CREATE SEQUENCE id_entrada
-    INCREMENT 1
-    START WITH 0;
-
-CREATE OR REPLACE PROCEDURE generar_entraditas(
-    f_tour IN INSCRIPCIONES_TOUR.f_inicio%TYPE,
-    n_fact IN INSCRIPCIONES_TOUR.f_inicio%TYPE,
-) IS
-DECLARE
-    CURSOR inscritos IS SELECT id_cliente, id_visit 
+    CURSOR inscritos IS 
+    SELECT id_cliente, id_visit 
     FROM DETALLES_INSCRITOS 
     WHERE (fecha_inicio = f_tour AND nro_fact = n_fact);
-    inscrit inscritos%ROWTYPE;
+    v_inscrit inscritos%ROWTYPE;
 BEGIN
-    FOR inscrit IN inscritos LOOP
-        IF EXISTS(inscrit.id_cliente) THEN 
+    FOR v_inscrit IN inscritos LOOP
+        IF EXISTS(v_inscrit.id_cliente) THEN 
             INSERT INTO ENTRADAS(f_inicio, nro_fact, nro, tipo)
             VALUES(f_tour, n_fact, id_entrada.nextval, 'A');
         ELSE 
             INSERT INTO ENTRADAS(f_inicio, nro_fact, nro, tipo)
             VALUES(f_tour, n_fact, id_entrada.nextval, 'M');
         END IF;
+        COMMIT;
     END LOOP;
-END generar_entraditas;
-/
-
---1.3 PROCEDIMIENTO PARA INSERTAR DETALLES INSCRITOS
-CREATE OR REPLACE PROCEDURE insertar_det_insc(
-    f_tour IN FECHAS_TOUR.f_inicio%TYPE,
-    nro_fact_insc IN INSCRIPCIONES_TOUR.nro_fact%TYPE,
-    id_visitante IN DETALLES_INSCRITOS.id_visit%TYPE,
-    id_repre IN DETALLES_INSCRITOS.id_cliente%TYPE DEFAULT NULL
-) IS
-DECLARE
-    ult_inscrito NUMBER;
-BEGIN
-    SELECT nvl(MAX(id_det_insc),0)+1 INTO ult_inscrito
-    FROM DETALLES_INSCRITOS WHERE fecha_inicio=f_tour AND
-    nro_fact=nro_fact_insc;
-    INSERT INTO DETALLES_INSCRITOS(fecha_inicio,nro_fact,id_det_insc,id_cliente,id_visit)
-    VALUES(f_tour,nro_fact_insc,ult_inscrito,id_repre,id_visitante);
-END;
+END generar_entradas;
 /
 
 
@@ -124,4 +78,196 @@ BEGIN
 END;
 /
 
+
+
+
+--- PROCEDIMIENTO PARA ACTUALIZAR LOTE INVENTARIO ---- PENDIENTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE OR REPLACE PROCEDURE actualizar_cant_lote(
+    p_cod_juguete LOTES_SET_TIENDA.cod_juguete%TYPE,
+    p_id_tienda LOTES_SET_TIENDA.id_tienda%TYPE,
+    p_nro_lote LOTES_SET_TIENDA.nro_lote%TYPE,
+    p_cant_descuento NUMBER
+)
+IS
+BEGIN
+    UPDATE LOTES_SET_TIENDA
+    SET cant_prod = (:OLD.cant_prod - p_cant_descuento) 
+    WHERE (cod_juguete = p_cod_juguete) AND (id_tienda = p_id_tienda) AND (nro_lote = p_nro_lote);
+END actualizar_cant_lote;
+
+--- PROCEDIMIENTO PARA CERRAR LOTE INVENTARIO ---- PENDIENTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+--- PROCEDIMIENTO DE FLUJO DE INSCRIPCIÓN
+
+CREATE OR REPLACE PROCEDURE flujo_de_inscripcion() IS
+BEGIN 
+    muestra_fechastour_disponibles;
+    --- SELECCIÓN DE FECHA
+    --- VALIDACIÓN DE FECHA INGRESADA
+    --- INSCRIPCIÓN DE PERSONA
+    --- CONSULTA SI VA A INSCRIBIR A OTRA (SE ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
+    --- SE TOTALIZA Y SE ACTUALIZA LA INSCRIPCIÓN
+END flujo_de_inscripcion;
+
+CREATE OR REPLACE PROCEDURE flujo_de_venta_online() IS 
+BEGIN
+    --- QUERY DE CLIENTES
+    SELECT p.nombre "PAIS RESIDENCIA", 
+        INITCAP(c.prim_nom) || ' ' || INITCAP(c.seg_nom) || ' ' || INITCAP(c.prim_ape) || ' ' || INITCAP(c.seg_ape) "NOMBRE DEL CLIENTE", 
+        c.id_lego "ID DEL CLIENTE" 
+        FROM CLIENTES c, PAISES p
+        WHERE c.id_pais_resi = p.id
+        ORDER BY p.nombre, c.prim_nom ASC;   
+    --- SELECCIÓN DE CLIENTES
+    --- VALIDACIÓN DE CLIENTE INGRESADO
+    --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAÍS
+    --- INGRESA PRODUCTO A COMPRAR Y CANTIDAD
+    --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
+    --- GENERA TOTAL Y ACTUALIZA FACTURA
+END flujo_de_venta_online;
+
+CREATE OR REPLACE PROCEDURE flujo_de_venta_fisica() IS 
+BEGIN
+    --- QUERY DE CLIENTES
+    --- SELECCIÓN DE CLIENTES
+    --- VALIDACIÓN DE CLIENTE INGRESADO
+    --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAÍS
+    --- INGRESA PRODUCTO A COMPRAR Y CANTIDAD
+    --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
+    --- GENERA TOTAL Y ACTUALIZA FACTURA
+END flujo_de_venta_online;
+
 ---1.3 PROCEDIMIENTO PARA FORMATEAR LA FECHA
+CREATE OR REPLACE PROCEDURE inserta_hr_tnda (
+    id_tnda IN NUMBER,
+    dia_char IN VARCHAR2,
+    hr_ent VARCHAR2,
+    hr_sal VARCHAR2
+)
+IS
+BEGIN
+    INSERT INTO HORARIOS_ATENCION (id_tienda,dia,hora_entr,hora_sal)
+    VALUES (
+        id_tnda,
+        TO_DATE(dia_char, 'DY'),
+        TO_DATE(hr_ent,'HH24:MI:SS'),
+        TO_DATE(hr_sal,'HH24:MI:SS') 
+    );
+END;
+/
+
+
+
+
+
+
+--1.5 PROCEDIMIENTO DE CIERRE DE CAJA
+CREATE OR REPLACE PROCEDURE PRO_CIERRE_DIARIO_STOCK(
+    p_fecha IN DATE DEFAULT SYSDATE -- Si no pasas fecha, usa la de hoy
+) IS
+    -- Cursor para agrupar ventas por tienda, producto y lote
+    CURSOR c_ventas_dia IS
+        SELECT d.id_tienda, 
+               d.codigo AS cod_juguete, 
+               d.nro_lote, 
+               SUM(d.cant_prod) AS total_vendido
+        FROM DETALLES_FACTURA_TIENDA d
+        JOIN FACTURAS_TIENDA f ON d.nro_fact = f.nro_fact
+        WHERE TRUNC(f.f_emision) = TRUNC(p_fecha) -- Filtramos por la fecha indicada
+        GROUP BY d.id_tienda, d.codigo, d.nro_lote;
+        
+    v_total_actualizados NUMBER := 0;
+BEGIN
+    -- Recorremos cada lote que tuvo movimiento hoy
+    FOR r_venta IN c_ventas_dia LOOP
+        
+        -- Descontamos del inventario fisico
+        UPDATE LOTES_SET_TIENDA
+        SET cant_prod = cant_prod - r_venta.total_vendido
+        WHERE cod_juguete = r_venta.cod_juguete
+          AND id_tienda = r_venta.id_tienda
+          AND nro_lote = r_venta.nro_lote;
+          
+        v_total_actualizados := v_total_actualizados + 1;
+        
+    END LOOP;
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Cierre completado. Lotes actualizados: ' || v_total_actualizados);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20130, 'Error en cierre diario: ' || SQLERRM);
+END;
+/
+
+
+--1.6 Simulando Inscripcion TOur
+--Muestra las fechas disponibles para inscribirse en tours
+CREATE OR REPLACE PROCEDURE muestra_fechastour_disponibles
+IS
+    CURSOR cur_ftour IS SELECT f_inicio, costo, cupos 
+    FROM FECHAS_TOUR WHERE f_inicio>SYSDATE;
+    row_ftour FECHAS_TOUR%ROWTYPE;
+BEGIN
+    FOR row_ftour IN cur_ftour
+    LOOP
+        DBMS_OUTPUT.PUT_LINE('Fecha del Tour: ' || TO_CHAR(row_ftour.f_inicio, 'DD-MONTH-YYYY') || 
+            ' | Costo: ' || row_ftour.costo || 
+            ' | Cupos: ' || row_ftour.cupos
+        );
+    END LOOP;
+END;
+/
+
+--1.7 Seleccion de Fecha
+--Tras mostrar las fechas disp, usuario escoge una
+CREATE OR REPLACE PROCEDURE seleccion_fecha
+IS
+    f_elegida DATE;
+    f_encontrada DATE;
+BEGIN
+    f_elegida :=&fecha_que_desea_inscribir;
+    DBMS_OUTPUT.PUT_LINE('Procesando inscripción para la fecha: ' || f_elegida || '..');
+    SELECT f_inicio INTO f_encontrada 
+    FROM FECHAS_TOUR WHERE f_inicio = f_elegida;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('La fecha NO existe en el registro.');    
+END;
+/
+
+
+--1.8 Generacion Facturas (ONLINE-TIENDA)
+---CREATE OR REPLACE PROCEDURE generacion_factura(
+    
+---)IS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

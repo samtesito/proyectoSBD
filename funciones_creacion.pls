@@ -78,6 +78,9 @@ BEGIN
     RETURN ROUND(v_subtotal + (v_subtotal * v_recargo), 2);
 END;
 /
+
+
+
 ---calcular total de la factura fisica---
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_TIENDA(
     p_nro_fact IN NUMBER,
@@ -98,6 +101,9 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20104, 'Error al calcular el total en tienda: ' || SQLERRM);
 END;
 /
+
+
+
 
 
 ---calcular total de puntos---
@@ -131,5 +137,82 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20013, 'Error al calcular puntos de lealtad: ' || SQLERRM);
+END;
+/
+
+
+
+
+
+
+-- Tasa fija (aprox. actual)
+-- 1 USD ≈ 6.42 DKK (Coronas Danesas - LEGO)
+-- 1 USD ≈ 0.86 EUR
+
+
+-- Funcion para mostrar el precio local segun el pais
+CREATE OR REPLACE FUNCTION mostrar_precio_local(
+    p_precio_usd IN NUMBER,
+    p_id_pais IN NUMBER
+) RETURN NUMBER IS
+    v_es_ue BOOLEAN;
+    v_es_dinamarca BOOLEAN := FALSE;
+BEGIN
+
+    SELECT ue INTO v_es_ue FROM PAISES WHERE id = p_id_pais;
+    
+    IF p_id_pais = 43 THEN
+        v_es_dinamarca := TRUE;
+    END IF;
+    
+    IF v_es_dinamarca THEN
+        RETURN ROUND(p_precio_usd * 6.42, 2);
+        
+    ELSIF v_es_ue THEN
+        RETURN ROUND(p_precio_usd * 0.86, 2);
+        
+    ELSE
+        RETURN p_precio_usd;
+        
+    END IF;
+    
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN p_precio_usd;
+END;
+/
+
+
+
+
+
+
+
+--- Totaliza la canitdad de lotes comprados en el dia ---
+CREATE OR REPLACE FUNCTION FUNC_TOTAL_VENTAS_LOTE_DIA(
+    p_id_tienda IN NUMBER,
+    p_codigo    IN NUMBER,
+    p_nro_lote  IN NUMBER
+) RETURN NUMBER IS
+    v_total_vendido NUMBER;
+BEGIN
+    -- Sumamos la cantidad de productos vendidos de ese lote especifico
+    -- uniendo con facturas para filtrar solo las de HOY (TRUNC(SYSDATE))
+    SELECT SUM(d.cant_prod)
+    INTO v_total_vendido
+    FROM DETALLES_FACTURA_TIENDA d
+    JOIN FACTURAS_TIENDA f ON d.nro_fact = f.nro_fact
+    WHERE d.id_tienda = p_id_tienda
+      AND d.codigo = p_codigo
+      AND d.nro_lote = p_nro_lote
+      AND TRUNC(f.f_emision) = TRUNC(SYSDATE); -- Solo ventas de hoy
+
+    -- Si no se ha vendido nada hoy, devuelve 0 en lugar de NULL
+    RETURN NVL(v_total_vendido, 0);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- En caso de error, retornamos 0 para no bloquear, o puedes lanzar error
+        RETURN 0;
 END;
 /

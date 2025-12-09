@@ -1,3 +1,7 @@
+---------------- CONFIGURACIONES NECESARIAS ---------------
+
+SET SERVEROUTPUT ON;
+
 --------------------  TABLAS DE ALI  ----------------------
 
 CREATE TABLE PAISES (

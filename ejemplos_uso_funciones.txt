@@ -1,0 +1,46 @@
+-- 1. TIENDA (sin recargo)
+UPDATE facturas_tienda 
+SET total = FUNC_CALCULAR_TOTAL_TIENDA(nro_fact, 'TIENDA')
+WHERE nro_fact = 50001;
+
+-- 2. ONLINE (con recargo país 58)
+UPDATE facturas_online 
+SET total = FUNC_CALCULAR_TOTAL_ONLINE(nro_fact, 'ONLINE', 58)
+WHERE nro_fact = 60001;
+
+-- Para conversión
+
+SELECT 
+    'TIENDA' AS tipo_factura,
+    50001 AS nro_fact,
+    FUNC_CALCULAR_TOTAL_TIENDA(50001, 'TIENDA') AS total_usd,
+    convertir_a_dkk(FUNC_CALCULAR_TOTAL_TIENDA(50001, 'TIENDA')) AS total_dkk,
+    convertir_a_eur(FUNC_CALCULAR_TOTAL_TIENDA(50001, 'TIENDA')) AS total_eur
+FROM DUAL
+
+UNION ALL
+
+SELECT 
+    'ONLINE' AS tipo_factura,
+    60001 AS nro_fact,
+    FUNC_CALCULAR_TOTAL_ONLINE(60001, 'ONLINE', 58) AS total_usd,
+    convertir_a_dkk(FUNC_CALCULAR_TOTAL_ONLINE(60001, 'ONLINE', 58)) AS total_dkk,
+    convertir_a_eur(FUNC_CALCULAR_TOTAL_ONLINE(60001, 'ONLINE', 58)) AS total_eur
+FROM DUAL;
+
+
+-- =====================================================
+-- MOSTRAR: Precio ORIGINAL + Precio LOCAL (JUGUETES)
+-- =====================================================
+
+SELECT 
+    j.cod_juguete,
+    j.nombre,
+    h.precio AS precio_original_usd,
+    mostrar_precio_local(h.precio, 58) AS venezuela_usd,  -- Cliente María
+    mostrar_precio_local(h.precio, 43) AS dinamarca_dkk,  -- Cliente Juan/Elsa
+    mostrar_precio_local(h.precio, 34) AS espana_eur      -- España UE
+FROM juguetes j
+JOIN historico_precios_juguetes h ON j.cod_juguete = h.cod_juguete
+WHERE h.f_fin IS NULL  -- Solo precios vigentes
+ORDER BY j.cod_juguete;
