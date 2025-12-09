@@ -16,6 +16,12 @@ VALUES (43, 'Dinamarca', 'danes', 'EUROPA', TRUE);
 INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
 VALUES (34, 'Espana', 'espanol', 'EUROPA', TRUE);
 
+INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
+VALUES (972, 'ISRAEL', 'israelí', 'ASIA', FALSE);
+
+INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
+VALUES (56, 'CHILE', 'chileno', 'AMERICA', FALSE);
+
 -- ESTADOS
 INSERT INTO ESTADOS (id_pais, id, nombre)
 VALUES (58, 1, 'Distrito Capital');
@@ -31,6 +37,18 @@ INSERT INTO ESTADOS (id_pais, id, nombre)
 VALUES (34, 1, 'Comunidad de Madrid');
 INSERT INTO ESTADOS (id_pais, id, nombre)
 VALUES (34, 2, 'Cataluna');
+
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (972, 1, 'Distrito Central');
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (972, 2, 'Distrito Tel Aviv');
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (972, 3, 'Distrito Sur');
+
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (56, 1, 'Coquimbo Region');
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (56, 2, 'Region Metropolitana de Santiago');
 
 -- CIUDADES
 INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
@@ -48,6 +66,20 @@ VALUES (34, 1, 101, 'Madrid');
 INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
 VALUES (34, 2, 102, 'Barcelona');
 
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (972, 1, 1, 'Rishon Lezion');
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (972, 2, 1, 'Tel Aviv');
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (972, 3, 1, 'Eilat');
+
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (56, 1, 1, 'Coquimbo');
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (56, 2, 1, 'Las Condes');
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (56, 2, 2, 'La Reina');
+
 -- CLIENTES
 INSERT INTO CLIENTES (id_lego, prim_nom, seg_nom, prim_ape, seg_ape, f_nacim, dni, id_pais_resi, pasaporte, f_venc_pasap)
 VALUES (1001, 'María', 'José', 'González', 'Pérez', TO_DATE('1990-05-12','YYYY-MM-DD'), 'V-12345678', 58, 'P1234567', TO_DATE('2030-05-12','YYYY-MM-DD'));
@@ -61,6 +93,20 @@ VALUES (1003, 'Elsa', NULL, 'Kristensen', 'Dorgu', TO_DATE('1992-02-20','YYYY-MM
 -- TIENDAS_LEGO
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
 VALUES (10, 'LEGO Caracas', 'Av. Libertador, C.C. Sambil', 58, 1, 101);
+
+INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+VALUES (11, 'LEGO Store Rishon Lezion', 'G Cinema City Mall, 3 Yaldey', 972, 1, 1);
+INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+VALUES (12, 'LEGO Store Tel Aviv', 'Dizengoff Center, Dizengoff St 50', 972, 2, 1);
+INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+VALUES (13, 'LEGO Store Eilat', 'BIG CENTER Eilat, 20 Hasatat St.', 972, 3, 1);
+
+INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+VALUES (21, 'LEGO Store Egana', 'Av. Larrain 5862, La Reina, Región Metropolitana, Chile', 56, 2, 2);
+INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+VALUES (22, 'LEGO Store Manquehue', 'Av. Manquehue Nte. 1255', 56, 2, 1);
+INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+VALUES (23, 'LEGO Store Calama', 'Av. Balmaceda 3242', 56, 1, 1);
 
 -- HORARIOS_ATENCION
 INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal)
