@@ -181,19 +181,29 @@ VALUES (23, 'LEGO Store Calama', 'Av. Balmaceda 3242', 56, 1, 1);
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
 VALUES (501, 'LEGO Store Multiplaza', 'Av. Balboa, Multiplaza Mall', 507, 101, 1001);
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
-VALUES (506, 'LEGO Store Altaplaza', 'Altaplaza Mall, Vía Centenario, Ciudad de Panamá', 1, 101, 1001);
+VALUES (506, 'LEGO Store Altaplaza', 'Altaplaza Mall, Vía Centenario, Ciudad de Panamá', 507, 101, 1001);
 
 -- HORARIOS_ATENCION
-INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal)
-VALUES (10, TO_DATE('2025-12-06','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI'));
 INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
-(10, TO_DATE('2025-12-07','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),  -- Domingo
-(10, TO_DATE('2025-12-08','YYYY-MM-DD'), TO_DATE('09:30','HH24:MI'), TO_DATE('18:00','HH24:MI')),  -- Lunes (abre 30min tarde)
-(10, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('20:00','HH24:MI')),  -- Martes (hasta tarde)
-(10, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('10:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),  -- Miércoles (abre tarde)
-(10, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('19:00','HH24:MI')),  -- Jueves (jueves extendido)
-(10, TO_DATE('2025-12-12','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),  -- Viernes
-(10, TO_DATE('2025-12-13','YYYY-MM-DD'), TO_DATE('10:00','HH24:MI'), TO_DATE('16:00','HH24:MI')),  -- Sábado (abre tarde, cierra temprano)
+(10, 'DOM', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')); 
+
+INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
+(10, 'LUN', TO_DATE('09:30','HH24:MI'), TO_DATE('18:00','HH24:MI')); 
+
+INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
+(10, 'MAR', TO_DATE('09:00','HH24:MI'), TO_DATE('20:00','HH24:MI')); 
+
+INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
+(10, 'MIE', TO_DATE('10:00','HH24:MI'), TO_DATE('17:00','HH24:MI')); 
+
+INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
+(10, 'JUE', TO_DATE('09:00','HH24:MI'), TO_DATE('19:00','HH24:MI')); 
+
+INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
+(10, 'VIE', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')); 
+
+INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
+(10, 'SAB', TO_DATE('10:00','HH24:MI'), TO_DATE('16:00','HH24:MI'));
 
 
 -- =======================
@@ -272,10 +282,10 @@ VALUES (TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900001, 'A'); -- Adulto
 INSERT INTO ENTRADAS (f_inicio, nro_fact, nro, tipo) VALUES 
 (TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900002, 'M'),  -- Menor
 (TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900003, 'A'),  -- Adulto
-(TO_DATE('2026-02-20','YYYY-MM-DD'), 800002, 900004, 'A'),
-(TO_DATE('2026-03-10','YYYY-MM-DD'), 800003, 900005, 'M'),
-(TO_DATE('2026-04-05','YYYY-MM-DD'), 800004, 900006, 'A'),
-(TO_DATE('2026-05-15','YYYY-MM-DD'), 800005, 900007, 'M');
+(TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900004, 'A'),
+(TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900005, 'M'),
+(TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900006, 'A'),
+(TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 900007, 'M');
 
 
 -- TEMAS
@@ -304,7 +314,7 @@ INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio
 
 INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", id_setpadre, instruc, piezas) VALUES 
 (412, 'Eeyore BrickHeadz', 'Figurine BrickHeadz de Eeyore con orejas colgantes', 307, '5A6', 'A', 'O', TRUE, NULL, 'Instrucciones simples coloridas', 127),
-(413, 'Wednesday & Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', 251),
+(413, 'Wednesday and Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', 251),
 (414, 'Dumbo BrickHeadz', 'Figura BrickHeadz de Dumbo con orejas grandes', 307, '3A4', 'A', 'O', TRUE, NULL, 'Instrucciones básicas grandes', 189),
 (415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', TRUE, 412, 'Instrucciones con variaciones animales', 140);
 
@@ -321,8 +331,9 @@ INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES
 
 (412, 414), 
 (414, 412),
-(413, 307),
+(413, 412),
 (415, 414);
+
 
 --LEGO BATMAN SE RELACIONA
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2011, 2013);
@@ -331,15 +342,13 @@ INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2012, 2014);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2013, 2014);
 
 -- LEGO ART SE RELACIONA
-INSERT INTO PRODUCTOS_RELACIONADOS VALUES (3011, 3009);
+INSERT INTO PRODUCTOS_RELACIONADOS VALUES (3011, 3013);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (3012, 3013);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (3013, 3014);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (3012, 3011);
 
 
 -- HISTORICO_PRECIOS_JUGUETES
-INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin)
-VALUES (401, TO_DATE('2025-01-01','YYYY-MM-DD'), 20.00, TO_DATE('2025-06-30','YYYY-MM-DD'));
 INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VALUES 
 (408, TO_DATE('2025-01-01','YYYY-MM-DD'), 45.99, TO_DATE('2025-06-30','YYYY-MM-DD')),
 (409, TO_DATE('2025-02-15','YYYY-MM-DD'), 29.99, TO_DATE('2025-08-20','YYYY-MM-DD')), 
@@ -351,8 +360,6 @@ INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VA
 
 
 -- CATALOGOS_LEGO
-INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite)
-VALUES (58, 401, 100);
 INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES 
 (52, 408, 50), 
 (55, 409, 75), 

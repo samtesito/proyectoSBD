@@ -47,7 +47,7 @@ CREATE TABLE CLIENTES (
 
 CREATE TABLE TIENDAS_LEGO (
     id NUMBER(5) CONSTRAINT pk_tienda PRIMARY KEY, 
-    nombre VARCHAR2(20) NOT NULL,       
+    nombre VARCHAR2(25) NOT NULL,       
     direccion VARCHAR2(150) NOT NULL,            
     id_pais NUMBER NOT NULL,
     id_estado NUMBER NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE TIENDAS_LEGO (
 
 CREATE TABLE HORARIOS_ATENCION (
     id_tienda NUMBER(5) NOT NULL,          
-    dia VARCHAR(2) NOT NULL,  
+    dia VARCHAR2(3) NOT NULL,  
     hora_entr DATE NOT NULL,   
     hora_sal DATE NOT NULL,    
     CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
@@ -164,7 +164,7 @@ CREATE TABLE TEMAS(
 
 CREATE TABLE JUGUETES (
     codigo NUMBER(5) CONSTRAINT pk_juguetes PRIMARY KEY,
-    nombre VARCHAR2(20) NOT NULL,
+    nombre VARCHAR2(30) NOT NULL,
     descripcion VARCHAR2(150) NOT NULL,
     id_tema NUMBER(5) NOT NULL,
     rgo_edad VARCHAR2(7) NOT NULL,

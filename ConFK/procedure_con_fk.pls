@@ -84,7 +84,7 @@ END;
 
 
 
---- PROCEDIMIENTO PARA ACTUALIZAR LOTE INVENTARIO ---- PENDIENTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+--- PROCEDIMIENTO PARA ACTUALIZAR LOTE INVENTARIO 
 CREATE OR REPLACE PROCEDURE actualizar_cant_lote(
     p_cod_juguete LOTES_SET_TIENDA.cod_juguete%TYPE,
     p_id_tienda LOTES_SET_TIENDA.id_tienda%TYPE,
@@ -98,9 +98,15 @@ BEGIN
     WHERE (cod_juguete = p_cod_juguete) AND (id_tienda = p_id_tienda) AND (nro_lote = p_nro_lote);
 END actualizar_cant_lote;
 
---- PROCEDIMIENTO PARA CERRAR LOTE INVENTARIO ---- PENDIENTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-CREATE OR REPLACE PROCEDURE contabilizar_desc_lote(
+
+
+--- PROCEDIMIENTO PARA CERRAR LOTE INVENTARIO 
+CREATE SEQUENCE desc
+    increment by 1
+    start with 1;
+
+CREATE OR REPLACE PROCEDURE generar_desc_lote_por_fecha(
     p_fecha IN DATE DEFAULT SYSDATE,
     p_id_tienda IN NUMBER,
     p_cod_juguete IN NUMBER,
@@ -110,11 +116,48 @@ IS
     v_cant_a_descontar NUMBER;
 BEGIN
     SELECT sum(d.cant_prod) 
-    FROM DETALLES_FACTURA_TIENDA d, FACTURAS_TIENDA f
-    WHERE (f.f_emision = p_fecha) AND (d.nro_lote = p_nro_lote) AND (d.id_tienda = p_id_tienda) AND (d.codigo = p_cod_juguete) AND ()
+    INTO v_cant_a_descontar 
+    FROM FACTURAS_TIENDA f, DETALLES_FACTURA_TIENDA d 
+    WHERE (f.f_emision = p_fecha) 
+        AND (d.nro_lote = p_nro_lote) 
+        AND (d.id_tienda = p_id_tienda) 
+        AND (d.codigo = p_cod_juguete);
+    -- SE INSERTAN EL DESCUENTO
+    INSERT INTO DESCUENTOS (id_desc, id_tienda, codigo,nro_lote,fecha,cant)
+    VALUES (desc.nextval,p_id_tienda,p_cod_juguete,p_nro_lote,p_fecha,v_cant_a_descontar);
+    -- SE ACTUALIZA LA CANTIDAD EN LOTE
+    actualizar_cant_lote(p_cod_juguete,p_id_tienda,p_nro_lote);
 END contabilizar_desc_lote;
 
---- PROCEDIMIENTO DE FLUJO DE INSCRIPCION
+
+
+
+
+---- OTRO INTENTO TOUR 
+
+CREATE OR REPLACE PROCEDURE gener_des_lotes_fech_y_tiem(
+    p_fecha IN DATE DEFAULT SYSDATE,
+    p_id_tienda IN NUMBER
+)
+IS 
+    CURSOR facts_fecha IS SELECT f.nro_fact
+        FROM FACTURAS_TIENDA f
+        WHERE (f.nro_fact = p_fecha) AND (f.id_tienda = p_id_tienda);
+    factu facts_fecha%ROWTYPE;
+BEGIN
+    FOR factu IN facts_fecha LOOP
+        SELECT d.codigo, d.id_tienda, d.nro_lote, sum(d.cant_prod) 
+        FROM DETALLES_FACTURA_TIENDA d 
+        WHERE (d.nro_fact = factu)
+    END LOOP;
+END gener_des_lotes_fech_y_tiem;
+
+
+
+
+
+
+
 
 
 ---1.3 PROCEDIMIENTO PARA FORMATEAR LA FECHA
@@ -135,54 +178,6 @@ BEGIN
     );
 END;
 /
-
-
-
-
-
-
---1.5 PROCEDIMIENTO DE CIERRE DE CAJA
-CREATE OR REPLACE PROCEDURE PRO_CIERRE_DIARIO_STOCK(
-    p_fecha IN DATE DEFAULT SYSDATE -- Si no se le pasa fecha, usa la de hoy
-) IS
-    CURSOR c_ventas_dia IS
-        SELECT d.id_tienda, 
-               d.codigo AS cod_juguete, 
-               d.nro_lote, 
-               SUM(d.cant_prod) AS total_vendido
-        FROM DETALLES_FACTURA_TIENDA d
-        JOIN FACTURAS_TIENDA f ON d.nro_fact = f.nro_fact
-        WHERE TRUNC(f.f_emision) = TRUNC(p_fecha) -- Filtra por la fecha indicada
-        GROUP BY d.id_tienda, d.codigo, d.nro_lote;
-        
-    v_total_actualizados NUMBER := 0;
-BEGIN
-    -- Recorre cada lote que se uso hoy
-    FOR r_venta IN c_ventas_dia LOOP
-        
-        -- Descontamos del inventario fisico
-        UPDATE LOTES_SET_TIENDA
-        SET cant_prod = cant_prod - r_venta.total_vendido
-        WHERE cod_juguete = r_venta.cod_juguete
-          AND id_tienda = r_venta.id_tienda
-          AND nro_lote = r_venta.nro_lote;
-          
-        v_total_actualizados := v_total_actualizados + 1;
-        
-    END LOOP;
-
-    COMMIT;
-    DBMS_OUTPUT.PUT_LINE('Cierre completado. Lotes actualizados: ' || v_total_actualizados);
-
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        RAISE_APPLICATION_ERROR(-20130, 'Error en cierre diario: ' || SQLERRM);
-END;
-/
-
-
-
 
 
 
@@ -214,7 +209,6 @@ CREATE OR REPLACE FUNCTION seleccion_fecha RETURN DATE IS
     f_elegida DATE;
     f_encontrada DATE;
 BEGIN
-    ACCEPT datousuario VARCHAR(20) PROMPT 'Ingrese valor de la fecha: ';
     f_elegida := TO_DATE(datousuario,'DD-MONTH-YYYY');
     DBMS_OUTPUT.PUT_LINE('Procesando inscripciOn para la fecha: ' || f_elegida || '..');
     SELECT f_inicio INTO f_encontrada 
