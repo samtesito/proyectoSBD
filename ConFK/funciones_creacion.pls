@@ -268,3 +268,37 @@ EXCEPTION
         RETURN 0;
 END;
 /
+
+CREATE OR REPLACE FUNCTION calcular_total_con_puntos(
+    p_nro_fact IN NUMBER,
+    p_tipo_factura IN VARCHAR2,
+    p_id_pais IN NUMBER DEFAULT NULL
+) RETURN NUMBER IS
+    v_subtotal     NUMBER(10,2);
+    v_normal       NUMBER(10,2);
+    v_puntos       NUMBER(5);
+    v_es_gratuita  BOOLEAN;
+BEGIN
+    -- 1. Calcular subtotal normal
+    v_subtotal := calcular_subtotal_factura(p_nro_fact, p_tipo_factura);
+    
+    -- 2. Verificar si cliente tiene puntos suficientes (≥500)
+    v_es_gratuita := es_gratuita(
+        (SELECT id_cliente FROM FACTURAS_ONLINE WHERE nro_fact = p_nro_fact)
+    );
+    
+    -- 3. Si es gratuita → TOTAL = 0
+    IF v_es_gratuita THEN
+        RETURN 0;
+    END IF;
+    
+    -- 4. Total normal (con envío si es ONLINE)
+    IF p_tipo_factura = 'ONLINE' THEN
+        v_normal := v_subtotal + calcular_costo_envio(v_subtotal, p_id_pais);
+    ELSE
+        v_normal := v_subtotal;  -- Tienda física sin envío
+    END IF;
+    
+    RETURN ROUND(v_normal, 2);
+END;
+/
