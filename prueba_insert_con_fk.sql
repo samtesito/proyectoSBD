@@ -10,17 +10,43 @@
 INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
 VALUES (58, 'Venezuela', 'venezolano', 'AMERICA', FALSE);
 
+INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
+VALUES (43, 'Dinamarca', 'danes', 'EUROPA', TRUE);
+
+INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
+VALUES (34, 'Espana', 'espanol', 'EUROPA', TRUE);
+
 -- ESTADOS
 INSERT INTO ESTADOS (id_pais, id, nombre)
 VALUES (58, 1, 'Distrito Capital');
 INSERT INTO ESTADOS (id_pais, id, nombre)
 VALUES (58, 2, 'Carabobo');
 
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (43, 1, 'Region Capital');
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (43, 2, 'Selandia');
+
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (34, 1, 'Comunidad de Madrid');
+INSERT INTO ESTADOS (id_pais, id, nombre)
+VALUES (34, 2, 'Cataluña');
+
 -- CIUDADES
 INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
 VALUES (58, 1, 101, 'Caracas');
 INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
 VALUES (58, 2, 102, 'Valencia');
+
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (43, 1, 101, 'Copenhague');
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (43, 2, 102, 'Rosklide');
+
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (34, 1, 101, 'Madrid');
+INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
+VALUES (34, 2, 102, 'Barcelona');
 
 -- CLIENTES
 INSERT INTO CLIENTES (id_lego, prim_nom, seg_nom, prim_ape, seg_ape, f_nacim, dni, id_pais_resi, pasaporte, f_venc_pasap)
