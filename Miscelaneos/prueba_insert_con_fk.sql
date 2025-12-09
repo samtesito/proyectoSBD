@@ -257,7 +257,7 @@ INSERT INTO FECHAS_TOUR (f_inicio, costo, cupos) VALUES
 
 -- INSCRIPCIONES_TOUR
 INSERT INTO INSCRIPCIONES_TOUR (f_inicio, nro_fact, f_emision, estado, total) 
-VALUES (TO_DATE('2026-12-22','YYYY-MM-DD'), 250, TO_DATE('2025-12-08','YYYY-MM-DD'), 'PENDIENTE', 20.00);
+VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, TO_DATE('2025-12-08','YYYY-MM-DD'), 'PENDIENTE', 20.00);
 
 
 -- =======================
