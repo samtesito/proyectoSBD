@@ -30,7 +30,7 @@ VALUES (43, 2, 'Selandia');
 INSERT INTO ESTADOS (id_pais, id, nombre)
 VALUES (34, 1, 'Comunidad de Madrid');
 INSERT INTO ESTADOS (id_pais, id, nombre)
-VALUES (34, 2, 'Cataluña');
+VALUES (34, 2, 'Cataluna');
 
 -- CIUDADES
 INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
