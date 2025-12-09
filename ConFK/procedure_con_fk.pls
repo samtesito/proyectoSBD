@@ -109,9 +109,9 @@ CREATE OR REPLACE PROCEDURE contabilizar_desc_lote(
 IS  
     v_cant_a_descontar NUMBER;
 BEGIN
-    SELECT sum(cant_prod) 
-    FROM DETALLES_FACTURA_TIENDA 
-    WHERE (nro_lote = p_nro_lote) AND (id_tienda = p_id_tienda) AND (codigo = p_cod_juguete) AND ()
+    SELECT sum(d.cant_prod) 
+    FROM DETALLES_FACTURA_TIENDA d, FACTURAS_TIENDA f
+    WHERE (f.f_emision = p_fecha) AND (d.nro_lote = p_nro_lote) AND (d.id_tienda = p_id_tienda) AND (d.codigo = p_cod_juguete) AND ()
 END contabilizar_desc_lote;
 
 --- PROCEDIMIENTO DE FLUJO DE INSCRIPCION

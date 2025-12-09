@@ -57,7 +57,7 @@ CREATE TABLE TIENDAS_LEGO (
 
 CREATE TABLE HORARIOS_ATENCION (
     id_tienda NUMBER(5) NOT NULL,          
-    dia DATE NOT NULL,  
+    dia VARCHAR(2) NOT NULL,  
     hora_entr DATE NOT NULL,   
     hora_sal DATE NOT NULL,    
     CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
@@ -272,6 +272,6 @@ CREATE TABLE DESCUENTOS(
     id_desc NUMBER(8) NOT NULL,
     fecha DATE NOT NULL,
     cant NUMBER(2) NOT NULL,
-    CONSTRAINT fk_desc_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (cod_juguetes,id_tienda,nro_lote),
+    CONSTRAINT fk_desc_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (cod_juguete,id_tienda,nro_lote),
     CONSTRAINT pk_iddesc PRIMARY KEY(codigo,id_tienda,nro_lote,id_desc)
 );
