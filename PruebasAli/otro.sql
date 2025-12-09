@@ -11,35 +11,8 @@ CREATE OR REPLACE TYPE t_lista_numeros AS TABLE OF NUMBER;
 
 
 --------------------------------------------------------------------------------------------------------------------------------------
+----TIENDA FISICA
 --------------------------------------------------------------------------------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION func_puntos_totales_cliente (
-    p_id_cliente IN NUMBER
-) RETURN NUMBER IS
-    v_total_puntos NUMBER := 0;
-BEGIN
-    -- Sumamos los puntos de todas las facturas ONLINE del cliente
-    SELECT NVL(SUM(ptos_generados), 0)
-    INTO v_total_puntos
-    FROM FACTURAS_ONLINE
-    WHERE id_cliente = p_id_cliente;
-
-    -- (Opcional) Si las ventas en TIENDA también dieran puntos, sumarías aquí otra consulta.
-    
-    RETURN v_total_puntos;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        RETURN 0;
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Error calculando puntos: ' || SQLERRM);
-        RETURN 0;
-END;
-/
---------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------
-
-
-
 --(Este cubre el requerimiento de "procesar_venta_fisica" y "registrar_venta_tienda" al mismo tiempo).
 CREATE OR REPLACE PROCEDURE registrar_venta_tienda (
     p_id_tienda    IN NUMBER,
@@ -116,14 +89,23 @@ END;
 /
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --------------------------------------------------------------------------------------------------------------------------------------
+------TIENDA ONLINE
 --------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
 CREATE OR REPLACE PROCEDURE p_realizar_venta_online (
     p_id_cliente   IN NUMBER,
     p_lista_prods  IN t_lista_numeros,
@@ -133,7 +115,9 @@ CREATE OR REPLACE PROCEDURE p_realizar_venta_online (
     v_id_pais       NUMBER;
     v_tipo_cli      VARCHAR2(1) := 'A'; -- Asumido
     v_total_final   NUMBER;
-    v_puntos        NUMBER;
+    v_puntos        NUMBER;         -- Puntos finales a acreditar
+    v_puntos_calc   NUMBER;         -- Puntos calculados por la compra (sin tope)
+    v_puntos_hist   NUMBER;         -- Puntos que ya tenia antes
     v_id_det        NUMBER := 1;
     v_existe_catalogo NUMBER;
 BEGIN
@@ -163,7 +147,6 @@ BEGIN
         END IF;
 
         -- Insertar Detalle
-        -- OJO: Tu tabla DETALLES_FACTURA_ONLINE pide 'id_pais'.
         INSERT INTO DETALLES_FACTURA_ONLINE (
             nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_pais
         ) VALUES (
@@ -174,34 +157,46 @@ BEGIN
     END LOOP;
 
     -- 5. Calcular Totales usando TUS funciones
-    -- Esta funcion tuya ya invoca a FUNC_CALCULAR_RECARGO internamente
     v_total_final := FUNC_CALCULAR_TOTAL_ONLINE(v_nro_fact, 'ONLINE', v_id_pais);
     
-    -- Calcular Puntos
-    v_puntos := FUNC_CALCULAR_PUNTOS(v_total_final);
+    -- === LOGICA DE TOPE HISTORICO (500 PUNTOS) ===
+    
+    -- A) Calculamos cuantos puntos daria esta compra normalmente
+    v_puntos_calc := FUNC_CALCULAR_PUNTOS(v_total_final);
+    
+    -- B) Buscamos cuantos tiene el cliente HOY (Antes de esta compra)
+    v_puntos_hist := func_puntos_totales_cliente(p_id_cliente);
+    
+    -- C) Aplicamos la regla del vaso lleno
+    IF (v_puntos_hist + v_puntos_calc) > 500 THEN
+        -- Si se pasa, solo le damos lo que falta para llegar a 500
+        v_puntos := 500 - v_puntos_hist;
+        -- Seguridad por si ya tenia mas de 500 (negativo)
+        IF v_puntos < 0 THEN v_puntos := 0; END IF;
+    ELSE
+        -- Si no se pasa, le damos todo lo calculado
+        v_puntos := v_puntos_calc;
+    END IF;
 
-
-
-
--- 6. Actualizar Factura con el total y los puntos ganados HOY
+    -- 6. Actualizar Factura con el total y los puntos YA VALIDADOS
     UPDATE FACTURAS_ONLINE
     SET total = v_total_final,
         ptos_generados = v_puntos
     WHERE nro_fact = v_nro_fact;
 
-    -- === NUEVO: MOSTRAR ACUMULADO ===
-    -- Llamamos a la funcion que acabamos de crear para ver el TOTAL HISTORICO
+    -- === NUEVO: MOSTRAR ACUMULADO (MISMO FORMATO) ===
     DECLARE
         v_acumulado_total NUMBER;
     BEGIN
+        -- Consultamos el total nuevo (que ahora sera maximo 500)
         v_acumulado_total := func_puntos_totales_cliente(p_id_cliente);
         
         DBMS_OUTPUT.PUT_LINE('---------------------------------------');
         DBMS_OUTPUT.PUT_LINE('FACTURA NRO: ' || v_nro_fact);
         DBMS_OUTPUT.PUT_LINE('Monto Total: ' || v_total_final || ' USD');
-        DBMS_OUTPUT.PUT_LINE('Puntos ganados en esta compra: ' || v_puntos);
+        DBMS_OUTPUT.PUT_LINE('Puntos ganados en esta compra: ' || v_puntos); -- Muestra los puntos reales asignados
         DBMS_OUTPUT.PUT_LINE('---------------------------------------');
-        DBMS_OUTPUT.PUT_LINE('>> PUNTOS TOTALES ACUMULADOS (Histórico): ' || v_acumulado_total);
+        DBMS_OUTPUT.PUT_LINE('>> PUNTOS TOTALES ACUMULADOS (Historico): ' || v_acumulado_total);
         DBMS_OUTPUT.PUT_LINE('---------------------------------------');
     END;
 
@@ -219,40 +214,6 @@ END;
 
 --------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-SET SERVEROUTPUT ON;
-DECLARE
-    v_prod t_lista_numeros := t_lista_numeros();
-    v_cant t_lista_numeros := t_lista_numeros();
-BEGIN
-    -- Configurar productos (ID y Cantidad)
-    v_prod.EXTEND(2);
-    v_cant.EXTEND(2);
-    
-    v_prod(1) := 401; -- Pon aqui IDs validos de tus JUGUETES
-    v_cant(1) := 1;
-    v_prod(2) := 401;
-    v_cant(2) := 10;
-
-    -- Prueba Venta Tienda (Asegurate que el Tienda 1 y Cliente 1 existan)
-    -- registrar_venta_tienda(ID_TIENDA, ID_CLIENTE, LISTA_PROD, LISTA_CANT)
-    registrar_venta_tienda(10, 1001, v_prod, v_cant);
-    
-    -- Prueba Venta Online
-    p_realizar_venta_online(1001, v_prod, v_cant);
-END;
-/
-
-
-
-
-
 
 DECLARE
     v_max_id NUMBER;
@@ -274,6 +235,57 @@ BEGIN
 END;
 /
 
+--------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION func_puntos_totales_cliente (
+    p_id_cliente IN NUMBER
+) RETURN NUMBER IS
+    v_total_puntos NUMBER := 0;
+    v_ultima_factura_gratis NUMBER;
+BEGIN
+    SELECT MAX(fo.nro_fact)
+    INTO v_ultima_factura_gratis
+    FROM FACTURAS_ONLINE fo
+    WHERE fo.id_cliente = p_id_cliente 
+    AND fo.ptos_generados = 0
+    AND fo.total = (
+        FUNC_CALCULAR_TOTAL_ONLINE(fo.nro_fact, 'ONLINE', 
+            (SELECT id_pais 
+            FROM DETALLES_FACTURA_ONLINE 
+            WHERE nro_fact = fo.nro_fact 
+            FETCH FIRST 1 ROW ONLY
+            )
+        ) - calcular_subtotal_factura(fo.nro_fact, 'ONLINE')
+    );
+
+    IF v_ultima_factura_gratis IS NULL THEN
+        SELECT NVL(SUM(ptos_generados), 0)
+        INTO v_total_puntos
+        FROM FACTURAS_ONLINE WHERE id_cliente = p_id_cliente;
+    ELSE
+        SELECT NVL(SUM(ptos_generados), 0)
+        INTO v_total_puntos
+        FROM FACTURAS_ONLINE 
+        WHERE id_cliente = p_id_cliente 
+        AND nro_fact > v_ultima_factura_gratis;
+    END IF;
+    
+    RETURN v_total_puntos;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN 0;
+    WHEN OTHERS THEN RETURN 0;
+END;
+/
+
+
+
+
+
+
+
+
+
 
 
 
@@ -281,10 +293,8 @@ END;
 
 
 --------------------------------------------------------------------------------------------------------------------------------------
+----INSCRIPCIONES TOUR
 --------------------------------------------------------------------------------------------------------------------------------------
-
-
-
 CREATE OR REPLACE PROCEDURE inscribir_participantes (
     p_f_tour       IN DATE,            -- Corresponde a FECHAS_TOUR.f_inicio
     p_id_respon    IN NUMBER,          -- El responsable (Se usa para validar, aunque no se guarda en cabecera segun tu tabla)
@@ -382,7 +392,7 @@ BEGIN
     WHERE f_inicio = p_f_tour AND nro_fact = v_nro_fact;
 
     COMMIT;
-    DBMS_OUTPUT.PUT_LINE('Inscripción creada. Fecha: ' || p_f_tour || ' Factura: ' || v_nro_fact || ' Total: ' || v_total_pagar);
+    DBMS_OUTPUT.PUT_LINE('Inscripcion creada. Fecha: ' || p_f_tour || ' Factura: ' || v_nro_fact || ' Total: ' || v_total_pagar);
 
 EXCEPTION
     WHEN e_sin_cupo THEN
@@ -391,5 +401,57 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20044, 'Error al inscribir: ' || SQLERRM);
+END;
+/
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+CREATE OR REPLACE PROCEDURE procesar_pago_inscripcion (
+    p_f_tour    IN DATE,
+    p_nro_fact  IN NUMBER,
+    p_monto     IN NUMBER
+) IS
+    v_total_real   NUMBER;
+    v_estado       VARCHAR2(20);
+BEGIN
+    -- 1. Verificar que la inscripcion existe y traer datos
+    SELECT total, estado
+    INTO v_total_real, v_estado
+    FROM INSCRIPCIONES_TOUR
+    WHERE f_inicio = p_f_tour 
+      AND nro_fact = p_nro_fact;
+
+    -- 2. Validaciones de Negocio
+    IF v_estado = 'PAGADO' THEN
+        RAISE_APPLICATION_ERROR(-20050, 'Error: Esta inscripcion ya está pagada.');
+    END IF;
+
+    IF p_monto < v_total_real THEN
+        RAISE_APPLICATION_ERROR(-20051, 'Error: Monto insuficiente. El total es: ' || v_total_real);
+    END IF;
+
+    -- 3. Actualizar estado a PAGADO
+    UPDATE INSCRIPCIONES_TOUR
+    SET estado = 'PAGADO'
+    WHERE f_inicio = p_f_tour 
+      AND nro_fact = p_nro_fact;
+
+    -- 4. Generar las Entradas Fisicas (Llamada a tu otro proceso)
+    -- Esto crea los tickets en la tabla ENTRADAS
+    generar_entradas(p_f_tour, p_nro_fact);
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Pago procesado con éxito. Estado actualizado a PAGADO y Entradas generadas.');
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20052, 'Inscripcion no encontrada.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20053, 'Error al procesar pago: ' || SQLERRM);
 END;
 /

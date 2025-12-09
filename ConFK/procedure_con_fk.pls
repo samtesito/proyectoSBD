@@ -105,6 +105,7 @@ END actualizar_cant_lote;
 CREATE OR REPLACE PROCEDURE flujo_de_inscripcion() IS
 BEGIN 
     muestra_fechastour_disponibles;
+    
     --- SELECCIÓN DE FECHA
     --- VALIDACIÓN DE FECHA INGRESADA
     --- INSCRIPCIÓN DE PERSONA
@@ -113,6 +114,9 @@ BEGIN
 END flujo_de_inscripcion;
 
 CREATE OR REPLACE PROCEDURE flujo_de_venta_online() IS 
+DECLARE 
+    cliente_no_encontrado EXCEPTION;
+    producto_no_encontrado EXCEPTION;
 BEGIN
     --- QUERY DE CLIENTES
     SELECT p.nombre "PAIS RESIDENCIA", 
@@ -122,9 +126,26 @@ BEGIN
         WHERE c.id_pais_resi = p.id
         ORDER BY p.nombre, c.prim_nom ASC;   
     --- SELECCIÓN DE CLIENTES
+    DBMS_OUTPUT.PUT_LINE("\n En la parte superior se muestran los clientes registrados.");
+    ACCEPT v_id NUMBER PROMPT 'Ingrese el ID del cliente a seleccionar: '
     --- VALIDACIÓN DE CLIENTE INGRESADO
+    IF NOT EXISTS(SELECT prim_nom FROM CLIENTES WHERE id = v_id) THEN 
+        RAISE cliente_no_encontrado;
+    END IF;
+    --- GENERA FACTURA
+    generacion_factura();
     --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAÍS
-    --- INGRESA PRODUCTO A COMPRAR Y CANTIDAD
+    SELECT t.nombre "TEMA", 
+        j.nombre "NOMBRE DEL JUGUETE", 
+        j.piezas 
+        j.codigo "ID DEL JUGUETE" 
+        FROM JUGUETES j, TEMAS t
+        WHERE j.id_tema = t.id
+        ORDER BY t.nombre, j.nombre ASC;   
+    --- INGRESA PRODUCTO A COMPRAR
+    --- VALIDA EXISTENCIA DE PRODUCTO
+    --- INGRESA CANTIDAD
+    --- VALIDA NÚMERO
     --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
     --- GENERA TOTAL Y ACTUALIZA FACTURA
 END flujo_de_venta_online;
@@ -226,18 +247,24 @@ END;
 
 --1.7 Seleccion de Fecha
 --Tras mostrar las fechas disp, usuario escoge una
-CREATE OR REPLACE PROCEDURE seleccion_fecha
-IS
+CREATE OR REPLACE FUNCTION seleccion_fecha RETURN DATE IS
+    
     f_elegida DATE;
     f_encontrada DATE;
 BEGIN
-    f_elegida :=&fecha_que_desea_inscribir;
+    ACCEPT datousuario VARCHAR(20) PROMPT 'Ingrese valor de la fecha: ';
+    f_elegida := TO_DATE(datousuario,'DD-MONTH-YYYY');
     DBMS_OUTPUT.PUT_LINE('Procesando inscripción para la fecha: ' || f_elegida || '..');
     SELECT f_inicio INTO f_encontrada 
     FROM FECHAS_TOUR WHERE f_inicio = f_elegida;
+    return f_encontrada;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN 
-        DBMS_OUTPUT.PUT_LINE('La fecha NO existe en el registro.');    
+        DBMS_OUTPUT.PUT_LINE('La fecha no existe en el registro.');
+        RETURN NULL;
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Ingrese la fecha en el formato: DD-MONTH-YYYY' || SQLERRM);
+        RETURN NULL;    
 END;
 /
 
