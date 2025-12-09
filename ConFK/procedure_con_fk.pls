@@ -94,7 +94,7 @@ CREATE OR REPLACE PROCEDURE actualizar_cant_lote(
 IS
 BEGIN
     UPDATE LOTES_SET_TIENDA
-    SET cant_prod = (:OLD.cant_prod - p_cant_descuento) 
+    SET cant_prod = (cant_prod - p_cant_descuento) 
     WHERE (cod_juguete = p_cod_juguete) AND (id_tienda = p_id_tienda) AND (nro_lote = p_nro_lote);
 END actualizar_cant_lote;
 
@@ -102,7 +102,7 @@ END actualizar_cant_lote;
 
 
 --- PROCEDIMIENTO PARA CERRAR LOTE INVENTARIO 
-CREATE SEQUENCE desc
+CREATE SEQUENCE desce
     increment by 1
     start with 1;
 
@@ -124,10 +124,10 @@ BEGIN
         AND (d.codigo = p_cod_juguete);
     -- SE INSERTAN EL DESCUENTO
     INSERT INTO DESCUENTOS (id_desc, id_tienda, codigo,nro_lote,fecha,cant)
-    VALUES (desc.nextval,p_id_tienda,p_cod_juguete,p_nro_lote,p_fecha,v_cant_a_descontar);
+    VALUES (desce.nextval,p_id_tienda,p_cod_juguete,p_nro_lote,p_fecha,v_cant_a_descontar);
     -- SE ACTUALIZA LA CANTIDAD EN LOTE
-    actualizar_cant_lote(p_cod_juguete,p_id_tienda,p_nro_lote);
-END contabilizar_desc_lote;
+    actualizar_cant_lote(p_cod_juguete,p_id_tienda,p_nro_lote,v_cant_a_descontar);
+END generar_desc_lote_por_fecha;
 
 
 
@@ -135,101 +135,22 @@ END contabilizar_desc_lote;
 
 ---- OTRO INTENTO TOUR 
 
-CREATE OR REPLACE PROCEDURE gener_des_lotes_fech_y_tiem(
-    p_fecha IN DATE DEFAULT SYSDATE,
-    p_id_tienda IN NUMBER
-)
-IS 
-    CURSOR facts_fecha IS SELECT f.nro_fact
-        FROM FACTURAS_TIENDA f
-        WHERE (f.nro_fact = p_fecha) AND (f.id_tienda = p_id_tienda);
-    factu facts_fecha%ROWTYPE;
-BEGIN
-    FOR factu IN facts_fecha LOOP
-        SELECT d.codigo, d.id_tienda, d.nro_lote, sum(d.cant_prod) 
-        FROM DETALLES_FACTURA_TIENDA d 
-        WHERE (d.nro_fact = factu)
-    END LOOP;
-END gener_des_lotes_fech_y_tiem;
-
-
-
-
-
-
-
-
-
----1.3 PROCEDIMIENTO PARA FORMATEAR LA FECHA
-CREATE OR REPLACE PROCEDURE inserta_hr_tnda (
-    id_tnda IN NUMBER,
-    dia_char IN VARCHAR2,
-    hr_ent VARCHAR2,
-    hr_sal VARCHAR2
-)
-IS
-BEGIN
-    INSERT INTO HORARIOS_ATENCION (id_tienda,dia,hora_entr,hora_sal)
-    VALUES (
-        id_tnda,
-        TO_DATE(dia_char, 'DY'),
-        TO_DATE(hr_ent,'HH24:MI:SS'),
-        TO_DATE(hr_sal,'HH24:MI:SS') 
-    );
-END;
-/
-
-
-
---1.6 Simulando Inscripcion TOur
---Muestra las fechas disponibles para inscribirse en tours
-CREATE OR REPLACE PROCEDURE muestra_fechastour_disponibles
-IS
-    CURSOR cur_ftour IS SELECT f_inicio, costo, cupos 
-    FROM FECHAS_TOUR WHERE f_inicio>SYSDATE;
-    row_ftour FECHAS_TOUR%ROWTYPE;
-BEGIN
-    FOR row_ftour IN cur_ftour
-    LOOP
-        DBMS_OUTPUT.PUT_LINE('Fecha del Tour: ' || TO_CHAR(row_ftour.f_inicio, 'DD-MONTH-YYYY') || 
-            ' | Costo: ' || row_ftour.costo || 
-            ' | Cupos: ' || row_ftour.cupos
-        );
-    END LOOP;
-END;
-/
-
-
-
-
---1.7 Seleccion de Fecha
---Tras mostrar las fechas disp, usuario escoge una
-CREATE OR REPLACE FUNCTION seleccion_fecha RETURN DATE IS
-    
-    f_elegida DATE;
-    f_encontrada DATE;
-BEGIN
-    f_elegida := TO_DATE(datousuario,'DD-MONTH-YYYY');
-    DBMS_OUTPUT.PUT_LINE('Procesando inscripciOn para la fecha: ' || f_elegida || '..');
-    SELECT f_inicio INTO f_encontrada 
-    FROM FECHAS_TOUR WHERE f_inicio = f_elegida;
-    return f_encontrada;
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN 
-        DBMS_OUTPUT.PUT_LINE('La fecha no existe en el registro.');
-        RETURN NULL;
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Ingrese la fecha en el formato: DD-MONTH-YYYY' || SQLERRM);
-        RETURN NULL;    
-END;
-/
-
-
---1.8 Generacion Facturas (ONLINE-TIENDA)
----CREATE OR REPLACE PROCEDURE generacion_factura(
-    
----)IS
-
+--CREATE OR REPLACE PROCEDURE gener_des_lotes_fech_y_tiem(
+  --  p_fecha IN DATE DEFAULT SYSDATE,
+  --  p_id_tienda IN NUMBER
+--)
+--IS 
+  --  CURSOR facts_fecha IS SELECT f.nro_fact
+    --    FROM FACTURAS_TIENDA f
+    --    WHERE (f.nro_fact = p_fecha) AND (f.id_tienda = p_id_tienda);
+   -- factu facts_fecha%ROWTYPE;
+--BEGIN
+  --  FOR factu IN facts_fecha LOOP
+    --    SELECT d.codigo, d.id_tienda, d.nro_lote, sum(d.cant_prod) 
+      --  FROM DETALLES_FACTURA_TIENDA d 
+        --WHERE (d.nro_fact = factu)
+    --END LOOP;
+--END gener_des_lotes_fech_y_tiem;
 
 
 

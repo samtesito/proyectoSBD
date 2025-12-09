@@ -44,22 +44,19 @@ END;
 ---calcular recargo de envio---
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_RECARGO(p_id_pais IN NUMBER) 
 RETURN NUMBER IS
-    v_es_ue   PAISES.ue%TYPE;  -- BOOLEANO (o CHAR) según lo definas
+    v_es_ue PAISES.ue%TYPE; 
     v_recargo NUMBER(5,2);
 BEGIN
     SELECT ue 
     INTO v_es_ue 
     FROM PAISES 
     WHERE id = p_id_pais;
-
-    IF v_es_ue = TRUE THEN        -- o = 'S' / = 1 según el tipo de UE
-        v_recargo := 0.05;        -- 5% para Unión Europea
+    if v_es_ue = TRUE THEN
+        v_recargo := 0.05; -- 5% para Union Europea
     ELSE
-        v_recargo := 0.15;        -- 15% para el resto del mundo
+        v_recargo := 0.15; -- 15% para el resto del mundo
     END IF;
-
     RETURN v_recargo;
-
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20101, 'Error: El ID de pais proporcionado no existe.');
@@ -76,7 +73,7 @@ CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_ONLINE(
     v_subtotal NUMBER(10,2);
     v_recargo  NUMBER;
 BEGIN
-    v_subtotal := calcular_subtotal_factura(p_nro_fact, p_tipo_factura);
+    v_subtotal := calcuura(p_nro_fact, p_tipo_factura);
     v_recargo := FUNC_CALCULAR_RECARGO(p_id_pais);
     
     RETURN ROUND(v_subtotal + (v_subtotal * v_recargo), 2);
@@ -143,8 +140,59 @@ END;
 
 
 -- Tasa fija (aprox. actual)
--- 1 USD ≈ 6.42 DKK (Coronas Danesas - LEGO)
--- 1 USD ≈ 0.86 EUR
+CREATE OR REPLACE FUNCTION func_puntos_totales_cliente (
+    p_id_cliente IN NUMBER
+) RETURN NUMBER IS
+    v_total_puntos NUMBER := 0;
+    v_ultima_factura_gratis NUMBER;
+BEGIN
+    SELECT MAX(fo.nro_fact)
+    INTO v_ultima_factura_gratis
+    FROM FACTURAS_ONLINE fo
+    WHERE fo.id_cliente = p_id_cliente 
+    AND fo.ptos_generados = 0
+    AND fo.total = (
+        FUNC_CALCULAR_TOTAL_ONLINE(fo.nro_fact, 'ONLINE', 
+            (SELECT id_pais 
+            FROM DETALLES_FACTURA_ONLINE 
+            WHERE nro_fact = fo.nro_fact 
+            FETCH FIRST 1 ROW ONLY
+            )
+        ) - calcular_subtotal_factura(fo.nro_fact, 'ONLINE')
+    );
+
+    IF v_ultima_factura_gratis IS NULL THEN
+        SELECT NVL(SUM(ptos_generados), 0)
+        INTO v_total_puntos
+        FROM FACTURAS_ONLINE WHERE id_cliente = p_id_cliente;
+    ELSE
+        SELECT NVL(SUM(ptos_generados), 0)
+        INTO v_total_puntos
+        FROM FACTURAS_ONLINE 
+        WHERE id_cliente = p_id_cliente 
+        AND nro_fact > v_ultima_factura_gratis;
+    END IF;
+    
+    RETURN v_total_puntos;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN RETURN 0;
+    WHEN OTHERS THEN RETURN 0;
+END;
+/
+
+CREATE OR REPLACE FUNCTION es_gratuita(
+    p_id_cliente IN NUMBER
+) RETURN BOOLEAN IS 
+BEGIN
+    IF (func_puntos_totales_cliente(p_id_cliente)>=500) THEN
+        RETURN TRUE;
+    ELSE 
+        RETURN FALSE;
+    END IF;
+END es_gratuita;
+/
+
+CREATE OR REPLACE FUNCTION-- 1 USD ≈ 6.42 DKK (Coronas Danesas - LEGO)
 
 
 -- Funcion para mostrar el precio local segun el pais
