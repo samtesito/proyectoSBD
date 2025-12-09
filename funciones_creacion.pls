@@ -5,7 +5,6 @@ BEGIN
 END;
 /
 
-<<<<<<< Updated upstream
 CREATE OR REPLACE FUNCTION calcular_subtotal_factura(
     p_nro_fact IN NUMBER,
     p_tipo_factura IN VARCHAR2  -- 'TIENDA' o 'ONLINE'
@@ -35,10 +34,6 @@ BEGIN
     RETURN v_total;
 END;
 /
-=======
-
-
->>>>>>> Stashed changes
 ---calcular recargo de envio---
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_RECARGO(p_id_pais IN NUMBER) 
 RETURN NUMBER IS
@@ -68,7 +63,6 @@ EXCEPTION
 END;
 /
 
-<<<<<<< Updated upstream
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_ONLINE(
     p_nro_fact IN NUMBER,
     p_tipo_factura IN VARCHAR2,
@@ -88,51 +82,13 @@ END;
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_TIENDA(
     p_nro_fact IN NUMBER,
     p_tipo_factura IN VARCHAR2
-=======
-
-
----calcular total de la factura online---
-CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL(
-    p_subtotal IN NUMBER, 
-    p_id_pais IN NUMBER
-) RETURN NUMBER IS
-    v_porcentaje_recargo NUMBER;
-    v_total NUMBER(10, 3);
-BEGIN
-    -- 1. Obtenemos el porcentaje de recargo usando la funcion que creamos antes
-    -- Si el pais es de la UE devuelve 0.05, si no, 0.15 
-    v_porcentaje_recargo := FUNC_CALCULAR_RECARGO(p_id_pais);
-
-    -- 2. Realizamos el calculo matematico: Subtotal + (Subtotal * Porcentaje)
-    v_total := p_subtotal + (p_subtotal * v_porcentaje_recargo);
-
-    -- 3. Retornamos el total redondeado a 3 decimales
-    RETURN ROUND(v_total, 3);
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE_APPLICATION_ERROR(-20103, 'Error al calcular el total: ' || SQLERRM);
-END;
-/
-
-
-
-
----calcular total de la factura fisica---
-CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_TIENDA(
-    p_subtotal IN NUMBER
->>>>>>> Stashed changes
 ) RETURN NUMBER IS
     v_total NUMBER(10, 2);
 BEGIN
     -- A diferencia de la venta online, en tienda fisica no hay recargo por envio.
     -- El documento indica que los precios son fijos y no varian, y no menciona impuestos adicionales.
     
-<<<<<<< Updated upstream
     v_total := calcular_subtotal_factura(p_nro_fact, p_tipo_factura);
-=======
-    v_total := p_subtotal;
->>>>>>> Stashed changes
 
     -- Retornamos el total redondeado a 2 decimales para coincidir con la tabla FACTURAS_TIENDA
     RETURN ROUND(v_total, 2);
@@ -142,13 +98,6 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20104, 'Error al calcular el total en tienda: ' || SQLERRM);
 END;
 /
-<<<<<<< Updated upstream
-=======
-
-
-
-
-
 
 
 ---calcular total de puntos---
@@ -184,4 +133,3 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20013, 'Error al calcular puntos de lealtad: ' || SQLERRM);
 END;
 /
->>>>>>> Stashed changes
