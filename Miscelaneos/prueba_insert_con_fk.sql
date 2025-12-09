@@ -339,7 +339,10 @@ INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES
 (61, 412, 100), 
 (34, 414, 60),
 (972, 2011, 40),
-(43, 3012, 25); 
+(43, 3012, 25);
+
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES (58, 408, 100);
+
 
 
 -- =======================
