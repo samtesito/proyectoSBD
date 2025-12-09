@@ -181,19 +181,18 @@ VALUES (23, 'LEGO Store Calama', 'Av. Balmaceda 3242', 56, 1, 1);
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
 VALUES (501, 'LEGO Store Multiplaza', 'Av. Balboa, Multiplaza Mall', 507, 101, 1001);
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
-VALUES (506, 'LEGO Store Altaplaza', 'Altaplaza Mall, Vía Centenario, Ciudad de Panamá', 1, 101, 1001);
+VALUES (506, 'LEGO Store Altaplaza', 'Altaplaza Mall, Vía Centenario, Ciudad de Panamá', 507, 101, 1001);
 
 -- HORARIOS_ATENCION
-INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal)
-VALUES (10, TO_DATE('2025-12-06','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI'));
 INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
-(10, TO_DATE('2025-12-07','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),  -- Domingo
-(10, TO_DATE('2025-12-08','YYYY-MM-DD'), TO_DATE('09:30','HH24:MI'), TO_DATE('18:00','HH24:MI')),  -- Lunes (abre 30min tarde)
-(10, TO_DATE('2025-12-09','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('20:00','HH24:MI')),  -- Martes (hasta tarde)
-(10, TO_DATE('2025-12-10','YYYY-MM-DD'), TO_DATE('10:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),  -- Miércoles (abre tarde)
-(10, TO_DATE('2025-12-11','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('19:00','HH24:MI')),  -- Jueves (jueves extendido)
-(10, TO_DATE('2025-12-12','YYYY-MM-DD'), TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),  -- Viernes
-(10, TO_DATE('2025-12-13','YYYY-MM-DD'), TO_DATE('10:00','HH24:MI'), TO_DATE('16:00','HH24:MI')),  -- Sábado (abre tarde, cierra temprano)
+(10, 'LUN', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),
+(10, 'MAR', TO_DATE('09:00','HH24:MI'), TO_DATE('20:00','HH24:MI')),
+(10, 'MIE', TO_DATE('10:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),
+(10, 'JUE', TO_DATE('09:00','HH24:MI'), TO_DATE('19:00','HH24:MI')),
+(10, 'VIE', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),
+(10, 'SAB', TO_DATE('10:00','HH24:MI'), TO_DATE('16:00','HH24:MI')),
+(10, 'DOM', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI'));
+
 
 
 -- =======================
@@ -248,8 +247,6 @@ INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, to
 (700007, TO_DATE('2025-12-03','YYYY-MM-DD'), 1008, 18, 142.00);
 
 -- FECHAS_TOUR
-INSERT INTO FECHAS_TOUR (f_inicio, costo, cupos)
-VALUES (TO_DATE('2026-01-15','YYYY-MM-DD'), 120.00, 50);
 INSERT INTO FECHAS_TOUR (f_inicio, costo, cupos) VALUES 
 (TO_DATE('2026-02-20','YYYY-MM-DD'), 95.00, 30),    -- Tour económico
 (TO_DATE('2026-03-10','YYYY-MM-DD'), 180.00, 25),   -- Tour premium
@@ -259,8 +256,9 @@ INSERT INTO FECHAS_TOUR (f_inicio, costo, cupos) VALUES
 (TO_DATE('2026-07-12','YYYY-MM-DD'), 140.00, 28);   -- Tour julio
 
 -- INSCRIPCIONES_TOUR
-INSERT INTO INSCRIPCIONES_TOUR (f_inicio, nro_fact, f_emision, estado, total)
-VALUES (TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, TO_DATE('2025-12-02','YYYY-MM-DD'), 'PAGADO', 120.00);
+INSERT INTO INSCRIPCIONES_TOUR (f_inicio, nro_fact, f_emision, estado, total) 
+VALUES (TO_DATE('2026-12-22','YYYY-MM-DD'), 250, TO_DATE('2025-12-08','YYYY-MM-DD'), 'PENDIENTE', 20.00);
+
 
 -- =======================
 -- TABLAS DE SAMUEL
@@ -309,8 +307,6 @@ INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio
 (415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', TRUE, 412, 'Instrucciones con variaciones animales', 140);
 
 -- PRODUCTOS_RELACIONADOS
-INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci)
-VALUES (401, 301);
 
 INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES 
 -- Marvel: Spider-Man familia + Daily Bugle escenario
@@ -321,7 +317,6 @@ INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES
 
 (412, 414), 
 (414, 412),
-(413, 307),
 (415, 414);
 
 --LEGO BATMAN SE RELACIONA
@@ -368,8 +363,9 @@ INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES
 -- =======================
 
 -- DETALLES_INSCRITOS
-INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_cliente)
-VALUES (TO_DATE('2026-01-15','YYYY-MM-DD'), 800001, 600001, 1001);
+INSERT INTO DETALLES_INSCRITOS(fecha_inicio, nro_fact, id_det_insc, id_visit) 
+VALUES (TO_DATE('2026-12-22','YYYY-MM-DD'), 250, 40, 2001),
+       (TO_DATE('2026-12-22','YYYY-MM-DD'), 250, 98, 2003);
 
 -- DETALLES_FACTURA_ONLINE
 INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_pais)
