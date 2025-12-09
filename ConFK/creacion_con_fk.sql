@@ -73,7 +73,7 @@ CREATE TABLE FACTURAS_TIENDA (
     id_cliente NUMBER(8) NOT NULL,
     id_tienda NUMBER(5) NOT NULL,
     f_emision DATE NOT NULL,
-    total NUMBER(6, 2), 
+    total NUMBER(8, 2), 
     CONSTRAINT fk_facttnda_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego),
     CONSTRAINT fk_facttnd_tnda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id)
 );
@@ -121,7 +121,7 @@ CREATE TABLE FACTURAS_ONLINE (
     f_emision DATE NOT NULL,
     id_cliente NUMBER(8) NOT NULL,
     ptos_generados NUMBER(3) NOT NULL,
-    total NUMBER(6, 2) NOT NULL,
+    total NUMBER(8, 2) NOT NULL,
     CONSTRAINT fk_factonl_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego)
 );
 
@@ -136,7 +136,7 @@ CREATE TABLE INSCRIPCIONES_TOUR (
     nro_fact NUMBER(8) NOT NULL,
     f_emision DATE NOT NULL,
     estado VARCHAR2(10) NOT NULL,
-    total NUMBER(7,2),
+    total NUMBER(8,2),
     CONSTRAINT fk_insctour_ftour FOREIGN KEY (f_inicio) REFERENCES FECHAS_TOUR(f_inicio),
     CONSTRAINT pk_inscripciones PRIMARY KEY (f_inicio, nro_fact),
     CONSTRAINT chk_statusinsc CHECK (estado IN ('PAGADO', 'PENDIENTE'))
