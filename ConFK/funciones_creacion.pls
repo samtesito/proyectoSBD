@@ -73,7 +73,7 @@ CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_ONLINE(
     v_subtotal NUMBER(10,2);
     v_recargo  NUMBER;
 BEGIN
-    v_subtotal := calcuura(p_nro_fact, p_tipo_factura);
+    v_subtotal := calcular_subtotal_factura(p_nro_fact, p_tipo_factura);
     v_recargo := FUNC_CALCULAR_RECARGO(p_id_pais);
     
     RETURN ROUND(v_subtotal + (v_subtotal * v_recargo), 2);
@@ -136,7 +136,20 @@ END;
 
 
 
-
+CREATE OR REPLACE FUNCTION calcular_costo_envio(
+    p_subtotal NUMBER,
+    p_id_pais IN NUMBER
+) RETURN NUMBER IS
+    v_recargo NUMBER(5,2);
+    v_costo_envio NUMBER(10,2);
+BEGIN
+    v_recargo := FUNC_CALCULAR_RECARGO(p_id_pais);
+    
+    v_costo_envio := ROUND(p_subtotal * v_recargo, 2);
+    
+    RETURN v_costo_envio;
+END;
+/
 
 
 -- Tasa fija (aprox. actual)
@@ -192,7 +205,6 @@ BEGIN
 END es_gratuita;
 /
 
-CREATE OR REPLACE FUNCTION-- 1 USD ≈ 6.42 DKK (Coronas Danesas - LEGO)
 
 
 -- Funcion para mostrar el precio local segun el pais
