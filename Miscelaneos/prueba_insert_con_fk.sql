@@ -185,6 +185,9 @@ INSERT INTO TEMAS (id, nombre, tipo, descripcion, id_tema_padre)
 VALUES (101, 'Lego Batman', 'L', 'Sets inspirados en el universo de Batman', NULL);
 INSERT INTO TEMAS (id, nombre, tipo, descripcion, id_tema_padre)
 VALUES (102, 'LEGO Art', 'L', 'Sets de arte y decoración con piezas LEGO', NULL);
+INSERT INTO TEMAS (id, nombre, tipo, descripcion, id_tema_padre) VALUES 
+(306, 'LEGO Marvel', 'L', 'Personajes y escenarios icónicos del universo Marvel', NULL),
+(307, 'LEGO BrickHeadz', 'O', 'Figuras coleccionables estilo BrickHeadz de Disney y más', NULL);
 
 -- JUGUETES
 INSERT INTO JUGUETES VALUES (2011, 'Batman Key Chain', 'Llavero oficial LEGO Batman 854235', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 1);
@@ -195,10 +198,33 @@ INSERT INTO JUGUETES VALUES (3011, 'The Milky Way Galaxy', 'LEGO Art La Vía Lá
 INSERT INTO JUGUETES VALUES (3012, 'LOVE', 'LEGO Art LOVE 31214', 102, '12+', 'C', 'L', TRUE, NULL, 'Guía incluida', 559);
 INSERT INTO JUGUETES VALUES (3013, 'Mona Lisa', 'LEGO Art Mona Lisa 31213', 102, '12+', 'C', 'L', TRUE, NULL, 'Guía paso a paso', 3110);
 INSERT INTO JUGUETES VALUES (3014, 'The Fauna Collection - Tiger', 'LEGO Art Fauna: Tigre 31217', 102, '12+', 'C', 'L', TRUE, NULL, 'Manual incluido', 637);
+INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", id_setpadre, instruc, piezas) VALUES 
+(408, 'Iron Spider-Man', 'Figura de Spider-Man con armadura Iron Spider y alas mecánicas', 306, '9A11', 'C', 'L', TRUE, NULL, 'Instrucciones con detalles técnicos', 412),
+(409, 'Dancing Groot', 'Groot bebé con funciones de baile y expresiones animadas', 306, '7A8', 'B', 'L', TRUE, NULL, 'Guía paso a paso interactiva', 298),
+(410, 'Miles Morales Mask', 'Casco de Miles Morales con detalles luminosos y soporte', 306, '12+', 'C', 'L', TRUE, 408, 'Instrucciones avanzadas con LEDs', 156),
+(411, 'Daily Bugle', 'Edificio icónico del Daily Bugle con oficinas y figuras', 306, 'ADULTOS', 'D', 'L', TRUE, NULL, 'Manual profesional 4D', 3724);
+
+INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", id_setpadre, instruc, piezas) VALUES 
+(412, 'Eeyore BrickHeadz', 'Figurine BrickHeadz de Eeyore con orejas colgantes', 307, '5A6', 'A', 'O', TRUE, NULL, 'Instrucciones simples coloridas', 127),
+(413, 'Wednesday & Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', 251),
+(414, 'Dumbo BrickHeadz', 'Figura BrickHeadz de Dumbo con orejas grandes', 307, '3A4', 'A', 'O', TRUE, NULL, 'Instrucciones básicas grandes', 189),
+(415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', TRUE, 412, 'Instrucciones con variaciones animales', 140);
 
 -- PRODUCTOS_RELACIONADOS
 INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci)
 VALUES (401, 301);
+
+INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES 
+-- Marvel: Spider-Man familia + Daily Bugle escenario
+(408, 410),
+(410, 408),
+(408, 411), 
+(409, 411), 
+
+(412, 414), 
+(414, 412),
+(413, 307),
+(415, 414);
 
 --LEGO BATMAN SE RELACIONA
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2011, 2013);
