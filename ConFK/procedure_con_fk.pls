@@ -133,30 +133,6 @@ END generar_desc_lote_por_fecha;
 
 
 
----- OTRO INTENTO TOUR 
-
---CREATE OR REPLACE PROCEDURE gener_des_lotes_fech_y_tiem(
-  --  p_fecha IN DATE DEFAULT SYSDATE,
-  --  p_id_tienda IN NUMBER
---)
---IS 
-  --  CURSOR facts_fecha IS SELECT f.nro_fact
-    --    FROM FACTURAS_TIENDA f
-    --    WHERE (f.nro_fact = p_fecha) AND (f.id_tienda = p_id_tienda);
-   -- factu facts_fecha%ROWTYPE;
---BEGIN
-  --  FOR factu IN facts_fecha LOOP
-    --    SELECT d.codigo, d.id_tienda, d.nro_lote, sum(d.cant_prod) 
-      --  FROM DETALLES_FACTURA_TIENDA d 
-        --WHERE (d.nro_fact = factu)
-    --END LOOP;
---END gener_des_lotes_fech_y_tiem;
-
-
-
-
-
-
 
 
 

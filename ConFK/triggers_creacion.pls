@@ -257,16 +257,6 @@ END;
 
 
 
--- 1.12. Validar que no se genere una entrada en una inscripcion que no esta confirmada --
--- Regla: no se inserta fila en ENTRADAS si la status en inscripcion != PAGADO
-CREATE OR REPLACE TRIGGER trg_entrada_solo_si_insc_conf
-BEFORE INSERT ON ENTRADAS FOR EACH ROW
-DECLARE
-    status_insc INSCRIPCIONES_TOUR.status%TYPE;
-BEGIN
-    
-END;
-/
 
 
 
