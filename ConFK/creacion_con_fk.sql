@@ -47,7 +47,7 @@ CREATE TABLE CLIENTES (
 
 CREATE TABLE TIENDAS_LEGO (
     id NUMBER(5) CONSTRAINT pk_tienda PRIMARY KEY, 
-    nombre VARCHAR2(25) NOT NULL,       
+    nombre VARCHAR2(30) NOT NULL,       
     direccion VARCHAR2(150) NOT NULL,            
     id_pais NUMBER NOT NULL,
     id_estado NUMBER NOT NULL,

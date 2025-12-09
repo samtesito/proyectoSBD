@@ -44,18 +44,22 @@ END;
 ---calcular recargo de envio---
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_RECARGO(p_id_pais IN NUMBER) 
 RETURN NUMBER IS
-    v_es_ue PAISES.ue%TYPE; 
+    v_es_ue   PAISES.ue%TYPE;  -- BOOLEANO (o CHAR) según lo definas
     v_recargo NUMBER(5,2);
 BEGIN
     SELECT ue 
     INTO v_es_ue 
     FROM PAISES 
     WHERE id = p_id_pais;
-        v_recargo := 0.05; -- 5% para Union Europea
+
+    IF v_es_ue = TRUE THEN        -- o = 'S' / = 1 según el tipo de UE
+        v_recargo := 0.05;        -- 5% para Unión Europea
     ELSE
-        v_recargo := 0.15; -- 15% para el resto del mundo
+        v_recargo := 0.15;        -- 15% para el resto del mundo
     END IF;
+
     RETURN v_recargo;
+
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20101, 'Error: El ID de pais proporcionado no existe.');
@@ -63,6 +67,7 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20102, 'Error inesperado al calcular recargo: ' || SQLERRM);
 END;
 /
+
 CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_ONLINE(
     p_nro_fact IN NUMBER,
     p_tipo_factura IN VARCHAR2,
@@ -71,7 +76,7 @@ CREATE OR REPLACE FUNCTION FUNC_CALCULAR_TOTAL_ONLINE(
     v_subtotal NUMBER(10,2);
     v_recargo  NUMBER;
 BEGIN
-    v_subtotal := calcuura(p_nro_fact, p_tipo_factura);
+    v_subtotal := calcular_subtotal_factura(p_nro_fact, p_tipo_factura);
     v_recargo := FUNC_CALCULAR_RECARGO(p_id_pais);
     
     RETURN ROUND(v_subtotal + (v_subtotal * v_recargo), 2);
