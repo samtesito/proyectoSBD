@@ -326,8 +326,6 @@ INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2012, 2014);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2013, 2014);
 
 -- HISTORICO_PRECIOS_JUGUETES
-INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin)
-VALUES (401, TO_DATE('2025-01-01','YYYY-MM-DD'), 20.00, TO_DATE('2025-06-30','YYYY-MM-DD'));
 INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VALUES 
 (408, TO_DATE('2025-01-01','YYYY-MM-DD'), 45.99, TO_DATE('2025-06-30','YYYY-MM-DD')),
 (409, TO_DATE('2025-02-15','YYYY-MM-DD'), 29.99, TO_DATE('2025-08-20','YYYY-MM-DD')), 
@@ -339,8 +337,6 @@ INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VA
 
 
 -- CATALOGOS_LEGO
-INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite)
-VALUES (58, 401, 100);
 INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES 
 (52, 408, 50), 
 (55, 409, 75), 
@@ -357,26 +353,26 @@ INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES
 
 -- DETALLES_INSCRITOS
 INSERT INTO DETALLES_INSCRITOS(fecha_inicio, nro_fact, id_det_insc, id_visit) 
-VALUES (TO_DATE('2026-12-22','YYYY-MM-DD'), 250, 40, 2001),
-       (TO_DATE('2026-12-22','YYYY-MM-DD'), 250, 98, 2003);
+VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 40, 2001),
+       (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 98, 2003);
 
 -- DETALLES_FACTURA_ONLINE
 INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_pais)
-VALUES (700001, 70001, 2, 'A', 401, 58);
+VALUES (700001, 70001, 2, 'A', 408, 58);
 
 -- LOTES_SET_TIENDA
 INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod)
-VALUES (401, 10, 301, TO_DATE('2025-10-15','YYYY-MM-DD'), 30);
+VALUES (408, 10, 301, TO_DATE('2025-10-15','YYYY-MM-DD'), 30);
 
 -- DETALLES_FACTURA_TIENDA
 INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_tienda, nro_lote)
-VALUES (500001, 80001, 3, 'M', 401, 10, 301);
+VALUES (500001, 80001, 3, 'M', 408, 10, 301);
 
 -- DESCUENTOS
 INSERT INTO DESCUENTOS (codigo, id_tienda, nro_lote, id_desc, fecha, cant)
-VALUES (401, 10, 301, 90001, TO_DATE('2025-12-05','YYYY-MM-DD'), 15);
+VALUES (408, 10, 301, 90001, TO_DATE('2025-12-05','YYYY-MM-DD'), 15);
 
-
+/*
 --INSERTS PROBADOS: CUPO
 INSERT INTO FECHAS_TOUR VALUES('22-12-26',20,1);
 INSERT INTO INSCRIPCIONES_TOUR VALUES('22-12-26',250,'08-12-25','PENDIENTE',0);
@@ -387,3 +383,4 @@ INSERT INTO DETALLES_INSCRITOS(fecha_inicio,nro_fact, id_det_insc,id_visit) VALU
 ------------------------------------------------------------
 -- FIN DEL SCRIPT DE DATOS DE PRUEBA
 ------------------------------------------------------------
+*/
