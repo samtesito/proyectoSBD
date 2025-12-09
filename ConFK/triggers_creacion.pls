@@ -4,22 +4,19 @@ CREATE OR REPLACE TRIGGER trg_validar_pasaporte_ue
 BEFORE INSERT OR UPDATE ON CLIENTES
 FOR EACH ROW
 DECLARE
-    v_es_ue NUMBER(1); -- Usamos NUMBER para manejar el booleano (1=True, 0=False)
+    v_es_ue NUMBER(1); --
 BEGIN
-    -- Verificamos si el pais de residencia es de la UE
-    -- Nota: Ajusta '1'/'0' segun como guardes el booleano en tu tabla PAISES
     SELECT CASE WHEN ue = 'TRUE' THEN 1 ELSE 0 END 
     INTO v_es_ue
     FROM PAISES
     WHERE id = :NEW.id_pais_resi; 
 
-    -- Si NO es UE y el pasaporte es nulo, error.
     IF v_es_ue = 0 AND :NEW.pasaporte IS NULL THEN
         RAISE_APPLICATION_ERROR(-20001, 'Error: Clientes de paises fuera de la UE requieren Pasaporte obligatorio.');
     END IF;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        NULL; -- Si el pais no existe aun, lo dejara pasar (o lanzar error de FK)
+        NULL;
 END;
 /
 
@@ -33,14 +30,14 @@ CREATE OR REPLACE TRIGGER trg_validar_tipo_juguete
 BEFORE INSERT OR UPDATE ON JUGUETES
 FOR EACH ROW
 BEGIN
-    -- CASO A: Si "set" es VERDADERO
+    -- Si "set" es verdadero
     IF :NEW."set" THEN 
         IF :NEW.piezas IS NOT NULL THEN
             RAISE_APPLICATION_ERROR(-20002, 'Error: Un SET no debe tener cantidad de piezas definida.');
         END IF;
     END IF;
 
-    -- CASO B: Si "set" es FALSO (usamos NOT)
+    -- Si "set" es falssso
     IF NOT :NEW."set" THEN
         IF :NEW.piezas IS NULL THEN
             RAISE_APPLICATION_ERROR(-20003, 'Error: Si el juguete no es un SET, debe especificar la cantidad de piezas.');
@@ -62,23 +59,23 @@ DECLARE
     falta_representante EXCEPTION; 
     visit_mayor_con_rep EXCEPTION;
 BEGIN
-    -- 1. VALIDACIoN DE EDAD MAXIMA
+    --VALIDA DE EDAD MAXIMA
     IF edad(:NEW.f_nacim) > 100 THEN
         RAISE visitante_mayor_a_100;
     END IF;
 
-    -- 2. VALIDACIoN DE EDAD MINIMA
+    --VALIDA DE EDAD MINIMA
     IF edad(:NEW.f_nacim) < 12 THEN
         RAISE visitante_menor_a_12;
     END IF;
 
-    -- 3. VALIDACIoN DE REPRESENTANTE (12 a 17 años)
-    -- Si la edad esta entre 12 y 17 (ambos inclusive) Y no tiene representante
+    --VALIDA DE REPRESENTANTE (12 a 17 años)
+    -- Si la edad esta entre 12-17 y no tiene representante
     IF (edad(:NEW.f_nacim) BETWEEN 12 AND 17) AND (:NEW.id_repres IS NULL) THEN
         RAISE falta_representante;
     END IF;
 
-    -- 4. VALIDACIoN DE REPRESENTANTE (Mayores de 17)
+    --VALIDA DE REPRESENTANTE (Mayores de 17)
     -- Si la edad es mayor a 17 Y tiene representante
     IF (edad(:NEW.f_nacim) > 17) AND (:NEW.id_repres IS NOT NULL) THEN
         RAISE visit_mayor_con_rep;
@@ -106,14 +103,14 @@ BEFORE INSERT OR UPDATE ON CLIENTES
 FOR EACH ROW
 DECLARE
     cliente_menor_de_edad EXCEPTION;
-    cliente_mayor_a_100 EXCEPTION; -- Nueva excepcion declarada
+    cliente_mayor_a_100 EXCEPTION;
 BEGIN
-    -- 1. VALIDACION DE EDAD MAXIMA
+    --Valida de edad maxima
     IF edad(:NEW.f_nacim) > 100 THEN
         RAISE cliente_mayor_a_100;
     END IF;
 
-    -- 2. VALIDACIoN DE EDAD MINIMA
+    --Valida de edad minima
     IF edad(:NEW.f_nacim) < 21 THEN
         RAISE cliente_menor_de_edad;
     END IF;
@@ -179,22 +176,20 @@ DECLARE
     v_cant_actual NUMBER(3) := 0;
     v_total_cant NUMBER(3);
 BEGIN
-    -- Obtener limite del catalogo para este pais/juguete
+    -- Obtiene limite del catalogo para este pais
     SELECT limite INTO v_limite
     FROM CATALOGOS_LEGO
     WHERE id_pais = :NEW.id_pais AND cod_juguete = :NEW.codigo;
     
-    -- Sumar cantidades existentes en esta factura para este producto
+    -- Suma las cantidades existentes en esta factura para este juguete
     SELECT COALESCE(SUM(cant_prod), 0) INTO v_cant_actual
     FROM DETALLES_FACTURA_ONLINE
     WHERE nro_fact = :NEW.nro_fact 
     AND codigo = :NEW.codigo 
     AND id_pais = :NEW.id_pais;
     
-    -- Total proyectado
     v_total_cant := v_cant_actual + :NEW.cant_prod;
     
-    -- Validar limite
     IF v_total_cant > v_limite THEN
         RAISE_APPLICATION_ERROR(-20012, 
             'Excede limite catalogo: ' || v_total_cant || ' > ' || v_limite || 
@@ -239,7 +234,6 @@ CREATE OR REPLACE TRIGGER trg_no_cambiar_f_inicio
 BEFORE UPDATE OF f_inicio ON FECHAS_TOUR
 FOR EACH ROW
 BEGIN
-    -- Lanza un error de aplicacion (-20015) si se intenta actualizar f_inicio
     RAISE_APPLICATION_ERROR(-20015, 'Error: La fecha de inicio del tour no puede ser modificada.');
 END;
 /
@@ -254,9 +248,6 @@ CREATE OR REPLACE TRIGGER trg_no_insertar_fecha_pasada
 BEFORE INSERT ON FECHAS_TOUR
 FOR EACH ROW
 BEGIN
-    -- TRUNC(SYSDATE) elimina la parte de la hora de la fecha actual.
-    -- Esto permite que se puedan insertar tours para el dia de hoy, 
-    -- pero rechaza cualquier fecha anterior a hoy.
     IF :NEW.f_inicio < TRUNC(SYSDATE) THEN
         RAISE_APPLICATION_ERROR(-20016, 'Error: La fecha de inicio del tour no puede ser anterior a la fecha actual.');
     END IF;
@@ -292,7 +283,7 @@ DECLARE
     v_vendido_hoy   NUMBER;
     v_disponible    NUMBER;
 BEGIN
-    -- 1. Obtener el stock fisico que marca la tabla (este numero NO cambia durante el dia)
+    --Obteniene el stock fisico que marca la tabla
     SELECT cant_prod
     INTO v_stock_fisico
     FROM LOTES_SET_TIENDA
@@ -300,14 +291,13 @@ BEGIN
       AND id_tienda = :NEW.id_tienda
       AND nro_lote = :NEW.nro_lote;
 
-    -- 2. Calcular cuanto se ha "comprometido" o vendido ya durante el dia
+    --Calcula cuanto se ha vendido durante el dia
     v_vendido_hoy := FUNC_TOTAL_VENTAS_LOTE_DIA(:NEW.id_tienda, :NEW.codigo, :NEW.nro_lote);
 
-    -- 3. Calcular disponibilidad real
-    -- Disponible = Lo que habia al amanecer - Lo vendido hoy
+    --Calcula disponibilidad real
     v_disponible := v_stock_fisico - v_vendido_hoy;
 
-    -- 4. VALIDAR: ¿Hay espacio para la nueva venta (:NEW.cant_prod)?
+    --Validar si hay espacio para la nueva venta
     IF v_disponible < :NEW.cant_prod THEN
         RAISE_APPLICATION_ERROR(-20017, 
             'Stock Insuficiente (Calculo Diario). ' ||
@@ -325,8 +315,7 @@ END;
 
 
 --1.14 Facturas no se pueden eliminar
-
--- Para facturas físicas
+-- facturas físicas
 CREATE OR REPLACE TRIGGER trg_no_delete_fact_tienda
 BEFORE DELETE ON FACTURAS_TIENDA
 FOR EACH ROW
@@ -335,7 +324,7 @@ BEGIN
 END;
 /
 
--- Para facturas online
+-- facturas online
 CREATE OR REPLACE TRIGGER trg_no_delete_fact_online
 BEFORE DELETE ON FACTURAS_ONLINE
 FOR EACH ROW

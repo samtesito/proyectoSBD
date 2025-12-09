@@ -17,31 +17,34 @@ END;
 
 
 --1.1 PROCEDIMIENTO PARA GENERAR ENTRADAS
-
-CREATE SEQUENCE id_entrada
-    INCREMENT BY 1
-    START WITH 0;
-
+CREATE SEQUENCE id_entrada INCREMENT BY 1 START WITH 1;
 CREATE OR REPLACE PROCEDURE generar_entradas(
-    f_tour IN INSCRIPCIONES_TOUR.f_inicio%TYPE,
-    n_fact IN INSCRIPCIONES_TOUR.f_inicio%TYPE
+    p_f_tour IN DATE,   
+    p_n_fact IN NUMBER  
 ) IS
-    CURSOR inscritos IS 
-    SELECT id_cliente, id_visit 
-    FROM DETALLES_INSCRITOS 
-    WHERE (fecha_inicio = f_tour AND nro_fact = n_fact);
-    v_inscrit inscritos%ROWTYPE;
+    CURSOR c_inscritos IS 
+        SELECT id_cliente, id_visit 
+        FROM DETALLES_INSCRITOS 
+        WHERE fecha_inicio = p_f_tour 
+          AND nro_fact = p_n_fact;
+          
+    v_tipo_entrada CHAR(1);
 BEGIN
-    FOR v_inscrit IN inscritos LOOP
-        IF EXISTS(v_inscrit.id_cliente) THEN 
-            INSERT INTO ENTRADAS(f_inicio, nro_fact, nro, tipo)
-            VALUES(f_tour, n_fact, id_entrada.nextval, 'A');
+    FOR r IN c_inscritos LOOP
+        
+        IF r.id_cliente IS NOT NULL THEN 
+            v_tipo_entrada := 'A'; -- Cliente (Adulto)
         ELSE 
-            INSERT INTO ENTRADAS(f_inicio, nro_fact, nro, tipo)
-            VALUES(f_tour, n_fact, id_entrada.nextval, 'M');
+            v_tipo_entrada := 'M'; -- Visitante (Menor)
         END IF;
-        COMMIT;
+
+        INSERT INTO ENTRADAS(f_inicio, nro_fact, nro, tipo)
+        VALUES(p_f_tour, p_n_fact, id_entrada.nextval, v_tipo_entrada);
+        
     END LOOP;
+    
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Entradas generadas con éxito.');
 END generar_entradas;
 /
 
@@ -97,69 +100,22 @@ END actualizar_cant_lote;
 
 --- PROCEDIMIENTO PARA CERRAR LOTE INVENTARIO ---- PENDIENTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-
-
---- PROCEDIMIENTO DE FLUJO DE INSCRIPCIÓN
-
-CREATE OR REPLACE PROCEDURE flujo_de_inscripcion() IS
-BEGIN 
-    muestra_fechastour_disponibles;
-    
-    --- SELECCIÓN DE FECHA
-    --- VALIDACIÓN DE FECHA INGRESADA
-    --- INSCRIPCIÓN DE PERSONA
-    --- CONSULTA SI VA A INSCRIBIR A OTRA (SE ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
-    --- SE TOTALIZA Y SE ACTUALIZA LA INSCRIPCIÓN
-END flujo_de_inscripcion;
-
-CREATE OR REPLACE PROCEDURE flujo_de_venta_online() IS 
-DECLARE 
-    cliente_no_encontrado EXCEPTION;
-    producto_no_encontrado EXCEPTION;
+CREATE OR REPLACE PROCEDURE contabilizar_desc_lote(
+    p_fecha IN DATE DEFAULT SYSDATE,
+    p_id_tienda IN NUMBER
+)
+IS 
+    CURSOR desc_por_lote IS 
+        SELECT d.id_lote, sum(d.cant_prod) 
+        FROM DETALLES_FACTURA_TIENDA d, FACTURAS_TIENDA f
+        WHERE (f.id_tienda = p_id_tienda) AND (d.f_emision = p_fecha)
+        GROUP BY d.id_lote;
 BEGIN
-    --- QUERY DE CLIENTES
-    SELECT p.nombre "PAIS RESIDENCIA", 
-        INITCAP(c.prim_nom) || ' ' || INITCAP(c.seg_nom) || ' ' || INITCAP(c.prim_ape) || ' ' || INITCAP(c.seg_ape) "NOMBRE DEL CLIENTE", 
-        c.id_lego "ID DEL CLIENTE" 
-        FROM CLIENTES c, PAISES p
-        WHERE c.id_pais_resi = p.id
-        ORDER BY p.nombre, c.prim_nom ASC;   
-    --- SELECCIÓN DE CLIENTES
-    DBMS_OUTPUT.PUT_LINE("\n En la parte superior se muestran los clientes registrados.");
-    ACCEPT v_id NUMBER PROMPT 'Ingrese el ID del cliente a seleccionar: '
-    --- VALIDACIÓN DE CLIENTE INGRESADO
-    IF NOT EXISTS(SELECT prim_nom FROM CLIENTES WHERE id = v_id) THEN 
-        RAISE cliente_no_encontrado;
-    END IF;
-    --- GENERA FACTURA
-    generacion_factura();
-    --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAÍS
-    SELECT t.nombre "TEMA", 
-        j.nombre "NOMBRE DEL JUGUETE", 
-        j.piezas 
-        j.codigo "ID DEL JUGUETE" 
-        FROM JUGUETES j, TEMAS t
-        WHERE j.id_tema = t.id
-        ORDER BY t.nombre, j.nombre ASC;   
-    --- INGRESA PRODUCTO A COMPRAR
-    --- VALIDA EXISTENCIA DE PRODUCTO
-    --- INGRESA CANTIDAD
-    --- VALIDA NÚMERO
-    --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
-    --- GENERA TOTAL Y ACTUALIZA FACTURA
-END flujo_de_venta_online;
+    SELECT sum()
 
-CREATE OR REPLACE PROCEDURE flujo_de_venta_fisica() IS 
-BEGIN
-    --- QUERY DE CLIENTES
-    --- SELECCIÓN DE CLIENTES
-    --- VALIDACIÓN DE CLIENTE INGRESADO
-    --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAÍS
-    --- INGRESA PRODUCTO A COMPRAR Y CANTIDAD
-    --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SÍ)
-    --- GENERA TOTAL Y ACTUALIZA FACTURA
-END flujo_de_venta_online;
+
+--- PROCEDIMIENTO DE FLUJO DE INSCRIPCION
+
 
 ---1.3 PROCEDIMIENTO PARA FORMATEAR LA FECHA
 CREATE OR REPLACE PROCEDURE inserta_hr_tnda (
@@ -187,9 +143,8 @@ END;
 
 --1.5 PROCEDIMIENTO DE CIERRE DE CAJA
 CREATE OR REPLACE PROCEDURE PRO_CIERRE_DIARIO_STOCK(
-    p_fecha IN DATE DEFAULT SYSDATE -- Si no pasas fecha, usa la de hoy
+    p_fecha IN DATE DEFAULT SYSDATE -- Si no se le pasa fecha, usa la de hoy
 ) IS
-    -- Cursor para agrupar ventas por tienda, producto y lote
     CURSOR c_ventas_dia IS
         SELECT d.id_tienda, 
                d.codigo AS cod_juguete, 
@@ -197,12 +152,12 @@ CREATE OR REPLACE PROCEDURE PRO_CIERRE_DIARIO_STOCK(
                SUM(d.cant_prod) AS total_vendido
         FROM DETALLES_FACTURA_TIENDA d
         JOIN FACTURAS_TIENDA f ON d.nro_fact = f.nro_fact
-        WHERE TRUNC(f.f_emision) = TRUNC(p_fecha) -- Filtramos por la fecha indicada
+        WHERE TRUNC(f.f_emision) = TRUNC(p_fecha) -- Filtra por la fecha indicada
         GROUP BY d.id_tienda, d.codigo, d.nro_lote;
         
     v_total_actualizados NUMBER := 0;
 BEGIN
-    -- Recorremos cada lote que tuvo movimiento hoy
+    -- Recorre cada lote que se uso hoy
     FOR r_venta IN c_ventas_dia LOOP
         
         -- Descontamos del inventario fisico
@@ -227,6 +182,10 @@ END;
 /
 
 
+
+
+
+
 --1.6 Simulando Inscripcion TOur
 --Muestra las fechas disponibles para inscribirse en tours
 CREATE OR REPLACE PROCEDURE muestra_fechastour_disponibles
@@ -245,6 +204,13 @@ BEGIN
 END;
 /
 
+
+
+TO_DATE('WED','DDD')
+
+
+
+
 --1.7 Seleccion de Fecha
 --Tras mostrar las fechas disp, usuario escoge una
 CREATE OR REPLACE FUNCTION seleccion_fecha RETURN DATE IS
@@ -254,7 +220,7 @@ CREATE OR REPLACE FUNCTION seleccion_fecha RETURN DATE IS
 BEGIN
     ACCEPT datousuario VARCHAR(20) PROMPT 'Ingrese valor de la fecha: ';
     f_elegida := TO_DATE(datousuario,'DD-MONTH-YYYY');
-    DBMS_OUTPUT.PUT_LINE('Procesando inscripción para la fecha: ' || f_elegida || '..');
+    DBMS_OUTPUT.PUT_LINE('Procesando inscripciOn para la fecha: ' || f_elegida || '..');
     SELECT f_inicio INTO f_encontrada 
     FROM FECHAS_TOUR WHERE f_inicio = f_elegida;
     return f_encontrada;

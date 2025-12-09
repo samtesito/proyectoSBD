@@ -44,3 +44,63 @@ FROM juguetes j
 JOIN historico_precios_juguetes h ON j.cod_juguete = h.cod_juguete
 WHERE h.f_fin IS NULL  -- Solo precios vigentes
 ORDER BY j.cod_juguete;
+
+
+CREATE OR REPLACE PROCEDURE flujo_de_inscripcion() IS
+BEGIN 
+    muestra_fechastour_disponibles;
+    
+    --- SELECCION DE FECHA
+    --- VALIDACION DE FECHA INGRESADA
+    --- INSCRIPCION DE PERSONA
+    --- CONSULTA SI VA A INSCRIBIR A OTRA (SE ABRE LOOP CON EL PASO ANTERIOR SI SI)
+    --- SE TOTALIZA Y SE ACTUALIZA LA INSCRIPCION
+END flujo_de_inscripcion;
+
+CREATE OR REPLACE PROCEDURE flujo_de_venta_online() IS 
+DECLARE 
+    cliente_no_encontrado EXCEPTION;
+    producto_no_encontrado EXCEPTION;
+BEGIN
+    --- QUERY DE CLIENTES
+    SELECT p.nombre "PAIS RESIDENCIA", 
+        INITCAP(c.prim_nom) || ' ' || INITCAP(c.seg_nom) || ' ' || INITCAP(c.prim_ape) || ' ' || INITCAP(c.seg_ape) "NOMBRE DEL CLIENTE", 
+        c.id_lego "ID DEL CLIENTE" 
+        FROM CLIENTES c, PAISES p
+        WHERE c.id_pais_resi = p.id
+        ORDER BY p.nombre, c.prim_nom ASC;   
+    --- SELECCION DE CLIENTES
+    DBMS_OUTPUT.PUT_LINE("\n En la parte superior se muestran los clientes registrados.");
+    ACCEPT v_id NUMBER PROMPT 'Ingrese el ID del cliente a seleccionar: '
+    --- VALIDACION DE CLIENTE INGRESADO
+    IF NOT EXISTS(SELECT prim_nom FROM CLIENTES WHERE id = v_id) THEN 
+        RAISE cliente_no_encontrado;
+    END IF;
+    --- GENERA FACTURA
+    generacion_factura();
+    --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAIS
+    SELECT t.nombre "TEMA", 
+        j.nombre "NOMBRE DEL JUGUETE", 
+        j.piezas 
+        j.codigo "ID DEL JUGUETE" 
+        FROM JUGUETES j, TEMAS t
+        WHERE j.id_tema = t.id
+        ORDER BY t.nombre, j.nombre ASC;   
+    --- INGRESA PRODUCTO A COMPRAR
+    --- VALIDA EXISTENCIA DE PRODUCTO
+    --- INGRESA CANTIDAD
+    --- VALIDA NÚMERO
+    --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SI)
+    --- GENERA TOTAL Y ACTUALIZA FACTURA
+END flujo_de_venta_online;
+
+CREATE OR REPLACE PROCEDURE flujo_de_venta_fisica() IS 
+BEGIN
+    --- QUERY DE CLIENTES
+    --- SELECCION DE CLIENTES
+    --- VALIDACION DE CLIENTE INGRESADO
+    --- QUERY DE PRODUCTOS DISPONIBLES PARA SU PAIS
+    --- INGRESA PRODUCTO A COMPRAR Y CANTIDAD
+    --- CONSULTA SI VA A COMPRAR OTRO (ABRE LOOP CON EL PASO ANTERIOR SI SI)
+    --- GENERA TOTAL Y ACTUALIZA FACTURA
+END flujo_de_venta_online;
