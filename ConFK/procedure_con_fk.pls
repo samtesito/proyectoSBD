@@ -102,17 +102,17 @@ END actualizar_cant_lote;
 
 CREATE OR REPLACE PROCEDURE contabilizar_desc_lote(
     p_fecha IN DATE DEFAULT SYSDATE,
-    p_id_tienda IN NUMBER
+    p_id_tienda IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_nro_lote IN NUMBER
 )
-IS 
-    CURSOR desc_por_lote IS 
-        SELECT d.id_lote, sum(d.cant_prod) 
-        FROM DETALLES_FACTURA_TIENDA d, FACTURAS_TIENDA f
-        WHERE (f.id_tienda = p_id_tienda) AND (d.f_emision = p_fecha)
-        GROUP BY d.id_lote;
+IS  
+    v_cant_a_descontar NUMBER;
 BEGIN
-    SELECT sum()
-
+    SELECT sum(cant_prod) 
+    FROM DETALLES_FACTURA_TIENDA 
+    WHERE (nro_lote = p_nro_lote) AND (id_tienda = p_id_tienda) AND (codigo = p_cod_juguete) AND ()
+END contabilizar_desc_lote;
 
 --- PROCEDIMIENTO DE FLUJO DE INSCRIPCION
 
@@ -203,10 +203,6 @@ BEGIN
     END LOOP;
 END;
 /
-
-
-
-TO_DATE('WED','DDD')
 
 
 

@@ -40,7 +40,8 @@ CREATE TABLE TIENDAS_LEGO (
 CREATE TABLE HORARIOS_ATENCION (        
     dia DATE NOT NULL,  
     hora_entr DATE NOT NULL,   
-    hora_sal DATE NOT NULL
+    hora_sal DATE NOT NULL,
+    CONSTRAINT chk_dia CHECK(dia IN ('LUN','MAR','MIE','JUE','VIE','SAB','DOM'))
 );
 
 --------------------  TABLAS DE DANIEL ----------------------
@@ -77,20 +78,20 @@ CREATE TABLE FACTURAS_ONLINE (
     nro_fact NUMBER(8) CONSTRAINT pk_fact_onl PRIMARY KEY,
     f_emision DATE NOT NULL,
     ptos_generados NUMBER(3) NOT NULL,
-    total NUMBER(6, 2) NOT NULL
+    total NUMBER(6, 2)
 );
 
 CREATE TABLE FECHAS_TOUR(
     f_inicio DATE CONSTRAINT pk_fecha_tour PRIMARY KEY,
     costo NUMBER(8,2) NOT NULL,
-    cupos NUMBER(3) NOT NULL ---- REVISAAAAAAR
+    cupos NUMBER(3) NOT NULL,
 );
 
 CREATE TABLE INSCRIPCIONES_TOUR (
     nro_factura NUMBER(8) NOT NULL,
     f_emision DATE NOT NULL,
     estado VARCHAR2(10) NOT NULL,
-    total NUMBER(7,2) NOT NULL,
+    total NUMBER(7,2),
     CONSTRAINT chk_statusinsc CHECK (estado IN ('PAGADO', 'PENDIENTE'))
 );
 

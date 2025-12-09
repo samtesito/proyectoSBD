@@ -61,9 +61,8 @@ CREATE TABLE HORARIOS_ATENCION (
     hora_entr DATE NOT NULL,   
     hora_sal DATE NOT NULL,    
     CONSTRAINT fk_horario_tienda FOREIGN KEY (id_tienda) REFERENCES TIENDAS_LEGO(id),
-    CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia)
-    ------- REVISAR
-    --CONSTRAINT chk_horario_dia CHECK ("ELLA ES ESE SUEÑO QUE TUVE DESPIERTO, UN RECUERDO LEVE, DE ESTO QUE SIENTO; UNA SACUDIDA, A MIS SALIDAS, LA CIMA DE UN BESO EN UN BRINCO SUICIDA.")
+    CONSTRAINT pk_horarios PRIMARY KEY (id_tienda, dia),
+    CONSTRAINT chk_dia CHECK(dia IN ('LUN','MAR','MIE','JUE','VIE','SAB','DOM'))
 );
 
 --------------------  TABLAS DE DANIEL ----------------------
@@ -121,7 +120,7 @@ CREATE TABLE FACTURAS_ONLINE (
     f_emision DATE NOT NULL,
     id_cliente NUMBER(8) NOT NULL,
     ptos_generados NUMBER(3) NOT NULL,
-    total NUMBER(8, 2) NOT NULL,
+    total NUMBER(8, 2),
     CONSTRAINT fk_factonl_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego)
 );
 
@@ -260,7 +259,7 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
     nro_lote NUMBER(3) NOT NULL,
     CONSTRAINT fk_detfacttnda_facttnda FOREIGN KEY (nro_fact) REFERENCES FACTURAS_TIENDA (nro_fact),
     CONSTRAINT pk_detfacttnda PRIMARY KEY (nro_fact,id_det_fact),
-    CONSTRAINT fk_detfacttnda_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA(codigo,id_tienda,nro_lote),
+    CONSTRAINT fk_detfacttnda_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA(cod_juguete,id_tienda,nro_lote),
     CONSTRAINT tipo_clienteft CHECK (tipo_cli in('M','A'))
 );
 
@@ -273,6 +272,6 @@ CREATE TABLE DESCUENTOS(
     id_desc NUMBER(8) NOT NULL,
     fecha DATE NOT NULL,
     cant NUMBER(2) NOT NULL,
-    CONSTRAINT fk_desc_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (codigo,id_tienda,nro_lote),
+    CONSTRAINT fk_desc_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (cod_juguetes,id_tienda,nro_lote),
     CONSTRAINT pk_iddesc PRIMARY KEY(codigo,id_tienda,nro_lote,id_desc)
 );
