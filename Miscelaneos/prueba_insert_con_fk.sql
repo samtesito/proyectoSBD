@@ -302,7 +302,7 @@ INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio
 
 INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", id_setpadre, instruc, piezas) VALUES 
 (412, 'Eeyore BrickHeadz', 'Figurine BrickHeadz de Eeyore con orejas colgantes', 307, '5A6', 'A', 'O', TRUE, NULL, 'Instrucciones simples coloridas', 127),
-(413, 'Wednesday & Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', 251),
+(413, 'Wednesday y Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', 251),
 (414, 'Dumbo BrickHeadz', 'Figura BrickHeadz de Dumbo con orejas grandes', 307, '3A4', 'A', 'O', TRUE, NULL, 'Instrucciones básicas grandes', 189),
 (415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', TRUE, 412, 'Instrucciones con variaciones animales', 140);
 
