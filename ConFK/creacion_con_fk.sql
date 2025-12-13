@@ -254,7 +254,7 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
     id_det_fact NUMBER(8) NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
     tipo_cli VARCHAR2(1) NOT NULL,
-    codigo NUMBER(8) NOT NULL,
+    cod_juguete NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
     CONSTRAINT fk_detfacttnda_facttnda FOREIGN KEY (nro_fact) REFERENCES FACTURAS_TIENDA (nro_fact),
@@ -266,12 +266,12 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
 --M: MENOR, A:ADULTO
 
 CREATE TABLE DESCUENTOS(
-    codigo NUMBER(8) NOT NULL,
+    cod_juguete NUMBER(8) NOT NULL,
     id_tienda NUMBER(8) NOT NULL,
     nro_lote NUMBER(3) NOT NULL,
     id_desc NUMBER(8) NOT NULL,
     fecha DATE NOT NULL,
     cant NUMBER(2) NOT NULL,
-    CONSTRAINT fk_desc_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (cod_juguete,id_tienda,nro_lote),
-    CONSTRAINT pk_iddesc PRIMARY KEY(codigo,id_tienda,nro_lote,id_desc)
+    CONSTRAINT fk_desc_lote FOREIGN KEY (cod_juguete,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA (cod_juguete,id_tienda,nro_lote),
+    CONSTRAINT pk_iddesc PRIMARY KEY(cod_juguete,id_tienda,nro_lote,id_desc)
 );

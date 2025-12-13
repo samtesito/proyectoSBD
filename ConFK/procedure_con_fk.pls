@@ -17,7 +17,9 @@ END;
 
 
 --1.1 PROCEDIMIENTO PARA GENERAR ENTRADAS
+
 CREATE SEQUENCE id_entrada INCREMENT BY 1 START WITH 1;
+
 CREATE OR REPLACE PROCEDURE generar_entradas(
     p_f_tour IN DATE,   
     p_n_fact IN NUMBER  
@@ -95,9 +97,11 @@ IS
 BEGIN
     UPDATE LOTES_SET_TIENDA
     SET cant_prod = (cant_prod - p_cant_descuento) 
-    WHERE (cod_juguete = p_cod_juguete) AND (id_tienda = p_id_tienda) AND (nro_lote = p_nro_lote);
+    WHERE (cod_juguete = p_cod_juguete) 
+        AND (id_tienda = p_id_tienda) 
+        AND (nro_lote = p_nro_lote);
 END actualizar_cant_lote;
-
+/
 
 
 
@@ -107,47 +111,26 @@ CREATE SEQUENCE desce
     start with 1;
 
 CREATE OR REPLACE PROCEDURE generar_desc_lote_por_fecha(
-    p_fecha IN DATE DEFAULT SYSDATE,
-    p_id_tienda IN NUMBER,
-    p_cod_juguete IN NUMBER,
-    p_nro_lote IN NUMBER
+    p_fecha IN DATE DEFAULT SYSDATE--,
+    --p_id_tienda IN NUMBER,
+    --p_cod_juguete IN NUMBER,
+    --p_nro_lote IN NUMBER
 )
 IS  
-    v_cant_a_descontar NUMBER;
+    CURSOR desc_por_lote IS
+        (SELECT d.cod_juguete, d.id_tienda, d.nro_lote, sum(d.cant_prod) total_desc
+            FROM DETALLES_FACTURA_TIENDA d 
+            WHERE (d.nro_fact IN (SELECT nro_fact FROM FACTURAS_TIENDA WHERE f_emision = p_fecha)) 
+            GROUP BY d.cod_juguete, d.id_tienda, d.nro_lote);
+    descuento desc_por_lote%ROWTYPE;
 BEGIN
-    SELECT sum(d.cant_prod) 
-    INTO v_cant_a_descontar 
-    FROM FACTURAS_TIENDA f, DETALLES_FACTURA_TIENDA d 
-    WHERE (f.f_emision = p_fecha) 
-        AND (d.nro_lote = p_nro_lote) 
-        AND (d.id_tienda = p_id_tienda) 
-        AND (d.codigo = p_cod_juguete);
-    -- SE INSERTAN EL DESCUENTO
-    INSERT INTO DESCUENTOS (id_desc, id_tienda, codigo,nro_lote,fecha,cant)
-    VALUES (desce.nextval,p_id_tienda,p_cod_juguete,p_nro_lote,p_fecha,v_cant_a_descontar);
-    -- SE ACTUALIZA LA CANTIDAD EN LOTE
-    actualizar_cant_lote(p_cod_juguete,p_id_tienda,p_nro_lote,v_cant_a_descontar);
+    FOR descuento IN desc_por_lote LOOP
+        -- SE INSERTAN LOS DESCUENTOS
+        INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
+        VALUES (desce.nextval, descuento.id_tienda, descuento.cod_juguete, descuento.nro_lote, p_fecha, descuento.total_desc);
+        -- SE ACTUALIZAN LA CANTIDADES EN LOS LOTES RESPECTIVOS
+        actualizar_cant_lote(descuento.cod_juguete, descuento.id_tienda, descuento.nro_lote, descuento.total_desc);
+    END LOOP;
 END generar_desc_lote_por_fecha;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/
 

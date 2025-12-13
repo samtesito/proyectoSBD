@@ -262,7 +262,7 @@ END;
 
 
 
-
+/* 
 -- 1.13. Verifica que haya stock virtual disponible al comprar
 -- Regla: No se puede comprar mas productos de los que hay disponibles
 CREATE OR REPLACE TRIGGER TRG_VALIDAR_STOCK_DIARIO
@@ -277,31 +277,31 @@ BEGIN
     SELECT cant_prod
     INTO v_stock_fisico
     FROM LOTES_SET_TIENDA
-    WHERE cod_juguete = :NEW.codigo
-      AND id_tienda = :NEW.id_tienda
-      AND nro_lote = :NEW.nro_lote;
+    WHERE cod_juguete = codigo
+        AND id_tienda = id_tienda
+        AND nro_lote = nro_lote;
 
     --Calcula cuanto se ha vendido durante el dia
-    v_vendido_hoy := FUNC_TOTAL_VENTAS_LOTE_DIA(:NEW.id_tienda, :NEW.codigo, :NEW.nro_lote);
+    v_vendido_hoy := FUNC_TOTAL_VENTAS_LOTE_DIA(id_tienda, codigo, nro_lote);
 
     --Calcula disponibilidad real
     v_disponible := v_stock_fisico - v_vendido_hoy;
 
     --Validar si hay espacio para la nueva venta
-    IF v_disponible < :NEW.cant_prod THEN
+    IF v_disponible < cant_prod THEN
         RAISE_APPLICATION_ERROR(-20017, 
             'Stock Insuficiente (Calculo Diario). ' ||
             'Stock Inicial: ' || v_stock_fisico || 
             ', Vendido Hoy: ' || v_vendido_hoy || 
             ', Restante: ' || v_disponible || 
-            '. Intentas comprar: ' || :NEW.cant_prod);
+            '. Intentas comprar: ' || cant_prod);
     END IF;
 
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20018, 'El lote o producto no existe en el inventario.');
 END;
-/
+/ */
 
 
 --1.14 Facturas no se pueden eliminar
