@@ -230,7 +230,7 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_det_fact NUMBER(8) NOT NULL,
     cant_prod NUMBER(3) NOT NULL,
     tipo_cli VARCHAR2(1) NOT NULL,
-    codigo NUMBER(8) NOT NULL,
+    cod_juguete NUMBER(8) NOT NULL,
     id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT fk_detfactonl_factonl FOREIGN KEY (nro_fact) REFERENCES FACTURAS_ONLINE (nro_fact),
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact),
@@ -259,7 +259,7 @@ CREATE TABLE DETALLES_FACTURA_TIENDA(
     nro_lote NUMBER(3) NOT NULL,
     CONSTRAINT fk_detfacttnda_facttnda FOREIGN KEY (nro_fact) REFERENCES FACTURAS_TIENDA (nro_fact),
     CONSTRAINT pk_detfacttnda PRIMARY KEY (nro_fact,id_det_fact),
-    CONSTRAINT fk_detfacttnda_lote FOREIGN KEY (codigo,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA(cod_juguete,id_tienda,nro_lote),
+    CONSTRAINT fk_detfacttnda_lote FOREIGN KEY (cod_juguete,id_tienda,nro_lote) REFERENCES LOTES_SET_TIENDA(cod_juguete,id_tienda,nro_lote),
     CONSTRAINT tipo_clienteft CHECK (tipo_cli in('M','A'))
 );
 

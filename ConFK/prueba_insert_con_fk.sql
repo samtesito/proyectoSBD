@@ -31,6 +31,7 @@ INSERT INTO PAISES (id, nombre, gentilicio, continente, ue) VALUES
 (49, 'Alemania', 'alemán', 'EUROPA', TRUE),
 (61, 'Australia', 'australiano', 'OCEANIA', FALSE);
 
+COMMIT;
 
 -- ESTADOS
 INSERT INTO ESTADOS (id_pais, id, nombre)
@@ -87,6 +88,8 @@ INSERT INTO ESTADOS (id_pais, id, nombre) VALUES
 (61, 1, 'Nueva Gales del Sur'),
 (61, 2, 'Victoria');
 
+COMMIT;
+
 
 -- CIUDADES
 INSERT INTO CIUDADES (id_pais, id_estado, id, nombre)
@@ -140,6 +143,7 @@ INSERT INTO CIUDADES (id_pais, id_estado, id, nombre) VALUES
 (61, 1, 101, 'Sídney'),
 (61, 2, 101, 'Melbourne');
 
+COMMIT;
 
 -- CLIENTES
 INSERT INTO CLIENTES (id_lego, prim_nom, seg_nom, prim_ape, seg_ape, f_nacim, dni, id_pais_resi, pasaporte, f_venc_pasap)
@@ -159,6 +163,7 @@ INSERT INTO CLIENTES (id_lego, prim_nom, seg_nom, prim_ape, seg_ape, f_nacim, dn
 (1008, 'Lucía', NULL, 'Martín', 'Gómez', TO_DATE('1994-12-28','YYYY-MM-DD'), '12345678Z', 34, NULL, NULL),
 (1009, 'David', 'Eli', 'Cohen', 'Levy', TO_DATE('1988-01-17','YYYY-MM-DD'), '123456789', 972, 'ISR987654', TO_DATE('2029-01-17','YYYY-MM-DD'));
 
+COMMIT;
 
 -- TIENDAS_LEGO
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
@@ -183,6 +188,8 @@ VALUES (501, 'LEGO Store Multiplaza', 'Av. Balboa, Multiplaza Mall', 507, 101, 1
 INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
 VALUES (506, 'LEGO Store Altaplaza', 'Altaplaza Mall, Vía Centenario, Ciudad de Panamá', 507, 101, 1001);
 
+COMMIT;
+
 -- HORARIOS_ATENCION
 INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES 
 (10, 'LUN', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI')),
@@ -193,7 +200,7 @@ INSERT INTO HORARIOS_ATENCION (id_tienda, dia, hora_entr, hora_sal) VALUES
 (10, 'SAB', TO_DATE('10:00','HH24:MI'), TO_DATE('16:00','HH24:MI')),
 (10, 'DOM', TO_DATE('09:00','HH24:MI'), TO_DATE('17:00','HH24:MI'));
 
-
+COMMIT;
 
 -- =======================
 -- TABLAS DE DANIEL
@@ -210,6 +217,7 @@ INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) 
 (500006, 1008, 13, TO_DATE('2025-12-07','YYYY-MM-DD'), 156.00),
 (500007, 1009, 22, TO_DATE('2025-12-08','YYYY-MM-DD'), 210.30);
 
+COMMIT;
 
 -- VISITANTES_FANS
 INSERT INTO VISITANTES_FANS (id_lego, prim_nom, prim_ape, seg_ape, f_nacim, dni, id_pais, seg_nom, pasaporte, f_venc_pasap)
@@ -221,6 +229,8 @@ INSERT INTO VISITANTES_FANS (id_lego, prim_nom, prim_ape, seg_ape, f_nacim, dni,
 (2005, 'Emma', 'Davis', 'Lee', TO_DATE('2008-02-14','YYYY-MM-DD'), 456789123, 61, NULL, NULL, NULL),         -- Australia
 (2006, 'Miguel', 'Sánchez', 'Ríos', TO_DATE('1997-09-30','YYYY-MM-DD'), 321654987, 34, NULL, NULL, NULL),    -- España
 (2007, 'Rachel', 'Goldberg', 'Weiss', TO_DATE('1990-04-18','YYYY-MM-DD'), 147258369, 972, NULL, NULL, NULL); -- Israel
+
+COMMIT;
 
 -- TELEFONOS
 INSERT INTO TELEFONOS (cod_inter, cod_local, numero, tipo, id_cliente)
@@ -235,6 +245,8 @@ INSERT INTO TELEFONOS (cod_inter, cod_local, numero, tipo, id_cliente) VALUES
 (34, 91, 2345678, 'F', 1008),  -- España fijo Madrid
 (972, 3, 4567890, 'M', 1009);  -- Israel móvil
 
+COMMIT;
+
 -- FACTURAS_ONLINE
 INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
 VALUES (700001, TO_DATE('2025-11-25','YYYY-MM-DD'), 1001, 25, 80.75);
@@ -246,6 +258,8 @@ INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, to
 (700006, TO_DATE('2025-12-02','YYYY-MM-DD'), 1007, 12, 65.75),
 (700007, TO_DATE('2025-12-03','YYYY-MM-DD'), 1008, 18, 142.00);
 
+COMMIT;
+
 -- FECHAS_TOUR
 INSERT INTO FECHAS_TOUR (f_inicio, costo, cupos) VALUES 
 (TO_DATE('2026-02-20','YYYY-MM-DD'), 95.00, 30),    -- Tour económico
@@ -255,10 +269,13 @@ INSERT INTO FECHAS_TOUR (f_inicio, costo, cupos) VALUES
 (TO_DATE('2026-06-25','YYYY-MM-DD'), 155.00, 20),   -- Tour vacaciones
 (TO_DATE('2026-07-12','YYYY-MM-DD'), 140.00, 28);   -- Tour julio
 
+COMMIT;
+
 -- INSCRIPCIONES_TOUR
 INSERT INTO INSCRIPCIONES_TOUR (f_inicio, nro_fact, f_emision, estado, total) 
 VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, TO_DATE('2025-12-08','YYYY-MM-DD'), 'PENDIENTE', 20.00);
 
+COMMIT;
 
 -- =======================
 -- TABLAS DE SAMUEL
@@ -270,6 +287,7 @@ VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 900001, 'A'); -- Adulto
 INSERT INTO ENTRADAS (f_inicio, nro_fact, nro, tipo) VALUES 
 (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 900002, 'M');  -- Menor
 
+COMMIT;
 
 -- TEMAS
 INSERT INTO TEMAS (id, nombre, tipo, descripcion, id_tema_padre)
@@ -279,6 +297,8 @@ VALUES (102, 'LEGO Art', 'L', 'Sets de arte y decoración con piezas LEGO', NULL
 INSERT INTO TEMAS (id, nombre, tipo, descripcion, id_tema_padre) VALUES 
 (306, 'LEGO Marvel', 'L', 'Personajes y escenarios icónicos del universo Marvel', NULL),
 (307, 'LEGO BrickHeadz', 'O', 'Figuras coleccionables estilo BrickHeadz de Disney y más', NULL);
+
+COMMIT;
 
 -- JUGUETES
 INSERT INTO JUGUETES VALUES (2011, 'Batman Key Chain', 'Llavero oficial LEGO Batman 854235', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 1);
@@ -301,6 +321,8 @@ INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio
 (414, 'Dumbo BrickHeadz', 'Figura BrickHeadz de Dumbo con orejas grandes', 307, '3A4', 'A', 'O', TRUE, NULL, 'Instrucciones básicas grandes', 189),
 (415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', TRUE, 412, 'Instrucciones con variaciones animales', 140);
 
+COMMIT;
+
 -- PRODUCTOS_RELACIONADOS
 
 INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES 
@@ -314,12 +336,15 @@ INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES
 (414, 412),
 (415, 414);
 
+COMMIT;
 
 --LEGO BATMAN SE RELACIONA
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2011, 2013);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2011, 2012);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2012, 2014);
 INSERT INTO PRODUCTOS_RELACIONADOS VALUES (2013, 2014);
+
+COMMIT;
 
 -- HISTORICO_PRECIOS_JUGUETES
 INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VALUES 
@@ -331,6 +356,7 @@ INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VA
 (414, TO_DATE('2025-01-15','YYYY-MM-DD'), 9.99, TO_DATE('2025-07-01','YYYY-MM-DD')),   
 (2011, TO_DATE('2025-06-01','YYYY-MM-DD'), 4.99, NULL);                               
 
+COMMIT;
 
 -- CATALOGOS_LEGO
 INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES 
@@ -344,7 +370,7 @@ INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES
 
 INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES (58, 408, 100);
 
-
+COMMIT;
 
 -- =======================
 -- TABLAS DE VIOLETA
@@ -355,21 +381,31 @@ INSERT INTO DETALLES_INSCRITOS(fecha_inicio, nro_fact, id_det_insc, id_visit)
 VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 40, 2001),
        (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 98, 2003);
 
+COMMIT;
+
 -- DETALLES_FACTURA_ONLINE
 INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_pais)
 VALUES (700001, 70001, 2, 'A', 408, 58);
+
+COMMIT;
 
 -- LOTES_SET_TIENDA
 INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod)
 VALUES (408, 10, 301, TO_DATE('2025-10-15','YYYY-MM-DD'), 30);
 
+COMMIT;
+
 -- DETALLES_FACTURA_TIENDA
 INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_tienda, nro_lote)
 VALUES (500001, 80001, 3, 'M', 408, 10, 301);
 
+COMMIT;
+
 -- DESCUENTOS
 INSERT INTO DESCUENTOS (codigo, id_tienda, nro_lote, id_desc, fecha, cant)
 VALUES (408, 10, 301, 90001, TO_DATE('2025-12-05','YYYY-MM-DD'), 15);
+
+COMMIT;
 
 /*
 --INSERTS PROBADOS: CUPO

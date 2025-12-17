@@ -22,6 +22,11 @@ DROP TABLE CIUDADES;
 DROP TABLE ESTADOS;
 DROP TABLE PAISES;
 
+-- LIMPIEZA DE SECUENCIAS
+
+DROP SEQUENCE id_entrada;
+DROP SEQUENCE desce;
+
 -----OTRO
 
 -- Tablas de Violeta (dependen de muchas otras)

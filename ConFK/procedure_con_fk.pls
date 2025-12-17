@@ -63,7 +63,7 @@ BEGIN
         SELECT NVL(SUM(d.cant_prod * h.precio), 0)
         INTO v_total
         FROM DETALLES_FACTURA_TIENDA d
-        JOIN LOTES_SET_TIENDA l ON (d.codigo, d.id_tienda, d.nro_lote) = (l.cod_juguete, l.id_tienda, l.nro_lote)
+        JOIN LOTES_SET_TIENDA l ON (d.cod_juguete, d.id_tienda, d.nro_lote) = (l.cod_juguete, l.id_tienda, l.nro_lote)
         JOIN HISTORICO_PRECIOS_JUGUETES h ON l.cod_juguete = h.cod_juguete AND h.f_fin IS NULL
         WHERE d.nro_fact = p_nro_fact;
         
@@ -71,7 +71,7 @@ BEGIN
         SELECT NVL(SUM(d.cant_prod * h.precio), 0)
         INTO v_total
         FROM DETALLES_FACTURA_ONLINE d
-        JOIN CATALOGOS_LEGO c ON (d.codigo, d.id_pais) = (c.cod_juguete, c.id_pais)
+        JOIN CATALOGOS_LEGO c ON (d.cod_juguete, d.id_pais) = (c.cod_juguete, c.id_pais)
         JOIN HISTORICO_PRECIOS_JUGUETES h ON c.cod_juguete = h.cod_juguete AND h.f_fin IS NULL
         WHERE d.nro_fact = p_nro_fact;
     
@@ -122,7 +122,7 @@ IS
             FROM DETALLES_FACTURA_TIENDA d 
             WHERE (d.nro_fact IN (SELECT nro_fact FROM FACTURAS_TIENDA WHERE f_emision = p_fecha)) 
             GROUP BY d.cod_juguete, d.id_tienda, d.nro_lote);
-    descuento desc_por_lote%ROWTYPE;
+    --descuento desc_por_lote%ROWTYPE;
 BEGIN
     FOR descuento IN desc_por_lote LOOP
         -- SE INSERTAN LOS DESCUENTOS
@@ -134,3 +134,6 @@ BEGIN
 END generar_desc_lote_por_fecha;
 /
 
+BEGIN
+generar_desc_lote_por_fecha(DATE '2025-12-13');
+END;
