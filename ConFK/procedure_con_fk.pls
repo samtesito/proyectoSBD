@@ -137,3 +137,9 @@ END generar_desc_lote_por_fecha;
 BEGIN
 generar_desc_lote_por_fecha(DATE '2025-12-13');
 END;
+/
+
+---Procedimiento para generar inscripcion
+CREATE SEQUENCE nfacturatour
+    increment by 1
+    start with 1;
