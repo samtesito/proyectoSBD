@@ -234,7 +234,7 @@ CREATE TABLE DETALLES_FACTURA_ONLINE(
     id_pais NUMBER(3) NOT NULL, 
     CONSTRAINT fk_detfactonl_factonl FOREIGN KEY (nro_fact) REFERENCES FACTURAS_ONLINE (nro_fact),
     CONSTRAINT pk_detfactonl PRIMARY KEY (nro_fact,id_det_fact),
-    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (codigo,id_pais) REFERENCES CATALOGOS_LEGO(cod_juguete,id_pais),
+    CONSTRAINT fk_detfactonl_catalogo FOREIGN KEY (cod_juguete,id_pais) REFERENCES CATALOGOS_LEGO(cod_juguete,id_pais),
     CONSTRAINT tipo_clientefo CHECK (tipo_cli in('M','A'))
 );
 
