@@ -143,3 +143,25 @@ END;
 CREATE SEQUENCE nfacturatour
     increment by 1
     start with 1;
+
+CREATE OR REPLACE PROCEDURE agregarparticipante(
+    finsc IN FECHAS_TOUR.f_inicio%TYPE,
+    nrofactinsc IN INSCRIPCIONES_TOUR.nro_fact%TYPE,
+    opcioninsc IN varchar2,
+    id_inscrito IN CLIENTES.id_lego%TYPE
+) IS
+id_detinsc NUMBER;
+BEGIN
+    SELECT COUNT (*) into id_detinsc from DETALLES_INSCRITOS where fecha_inicio=finsc AND
+    nro_fact=nrofactinsc;
+    IF UPPER(opcioninsc) = 'C' THEN
+        INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_cliente, id_visit)
+        VALUES (finsc, nrofactinsc, id_detinsc+1, id_inscrito, NULL);
+    ELSIF UPPER(opcioninsc) = 'V' THEN 
+        INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_cliente, id_visit)
+        VALUES (finsc, nrofactinsc, id_detinsc+1, NULL, id_inscrito);
+    ELSE
+        RAISE_APPLICATION_ERROR(-20020, 'Tipo inválido: debe ser C o V');
+    END IF;
+END;
+/
