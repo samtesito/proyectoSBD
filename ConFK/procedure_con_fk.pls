@@ -139,6 +139,7 @@ generar_desc_lote_por_fecha(DATE '2025-12-13');
 END;
 /
 
+
 ---Procedimiento para generar inscripcion
 CREATE SEQUENCE nfacturatour
     increment by 1
@@ -162,6 +163,43 @@ BEGIN
         VALUES (finsc, nrofactinsc, id_detinsc+1, NULL, id_inscrito);
     ELSE
         RAISE_APPLICATION_ERROR(-20020, 'Tipo inválido: debe ser C o V');
+    END IF;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ACTUALIZARINSCRIPCION(
+    finsc IN FECHAS_TOUR.f_inicio%TYPE,
+    nrofactinsc IN INSCRIPCIONES_TOUR.nro_fact%TYPE
+)IS
+    totalfact NUMBER;
+    preciotour NUMBER;
+    cantinscritos NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO cantinscritos FROM DETALLES_INSCRITOS WHERE
+    fecha_inicio=finsc AND nro_fact=nrofactinsc;
+    SELECT costo INTO preciotour FROM FECHAS_TOUR WHERE
+    f_inicio=finsc;
+    totalfact := cantinscritos * preciotour;
+    UPDATE INSCRIPCIONES_TOUR SET
+        estado='PAGADO',
+        total=totalfact
+    WHERE f_inicio=finsc AND nro_fact=nrofactinsc;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE CONFIRMACIONINSCRIPCION(
+    finsc IN FECHAS_TOUR.f_inicio%TYPE,
+    nrofactinsc IN INSCRIPCIONES_TOUR.nro_fact%TYPE,
+    opcion IN varchar2
+) IS
+BEGIN
+    IF UPPER(opcion) = 'S' THEN
+        ACTUALIZARINSCRIPCION(finsc,nrofactinsc);
+        generar_entradas(finsc,nrofactinsc);
+    ELSIF UPPER(opcion) = 'N' THEN 
+        DBMS_OUTPUT.PUT_LINE('Se ha registrado la inscripcion como PENDIENTE.');
+    ELSE
+        RAISE_APPLICATION_ERROR(-20020, 'Tipo inválido: debe ser S o N');
     END IF;
 END;
 /
