@@ -23,3 +23,8 @@ j.codigo = h.cod_juguete AND h.f_fin IS NULL;
 --5) Vista de Clientes Exclusivamente
 CREATE VIEW V_CLIENTES(id_cliente,nombrecliente,apellidocliente) 
 AS SELECT c.id_lego, c.prim_nom, c.prim_ape from CLIENTES c;
+
+--6) Vista de Productos por Pais
+CREATE VIEW V_PRODPAIS(id_producto, nombre_producto, precio_producto, pais_origen) AS 
+SELECT p.codigo, p.nombre, h.precio, p.pais_orig from PRODUCTOS p, 
+HISTORICO_PRECIOS_PRODUCTOS h WHERE p.codigo = h.cod_producto AND h.f_fin IS NULL;
