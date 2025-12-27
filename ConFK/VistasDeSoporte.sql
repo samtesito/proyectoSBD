@@ -25,6 +25,19 @@ CREATE VIEW V_CLIENTES(id_cliente,nombrecliente,apellidocliente)
 AS SELECT c.id_lego, c.prim_nom, c.prim_ape from CLIENTES c;
 
 --6) Vista de Productos por Pais
-CREATE VIEW V_PRODPAIS(id_producto, nombre_producto, precio_producto, pais_origen) AS 
-SELECT p.codigo, p.nombre, h.precio, p.pais_orig from PRODUCTOS p, 
-HISTORICO_PRECIOS_PRODUCTOS h WHERE p.codigo = h.cod_producto AND h.f_fin IS NULL;
+CREATE OR REPLACE VIEW V_CATALOGO_ONLINE AS
+SELECT 
+    c.id_pais,
+    j.codigo AS id_producto,
+    j.nombre AS nombre_producto,
+    h.precio AS precio_usd,
+    mostrar_precio_local(h.precio, c.id_pais) AS precio_local,
+    c.limite AS stock_maximo
+FROM 
+    CATALOGOS_LEGO c, 
+    JUGUETES j, 
+    HISTORICO_PRECIOS_JUGUETES h
+WHERE 
+    c.cod_juguete = j.codigo
+    AND j.codigo = h.cod_juguete
+    AND h.f_fin IS NULL;

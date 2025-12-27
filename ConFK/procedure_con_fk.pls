@@ -203,3 +203,91 @@ BEGIN
     END IF;
 END;
 /
+
+--Procedimiento para validar disponibilidad de producto en venta online
+CREATE OR REPLACE PROCEDURE VALIDARSTOCKONLINE(
+    p_cod_juguete IN NUMBER, -- Código del juguete
+    p_id_pais     IN NUMBER, -- ID del país
+    p_cantidad_n  IN NUMBER  -- Cantidad a comprar
+) IS
+    v_limite NUMBER; -- Se supone que es el stock disponible para el país
+    v_ya_vendido NUMBER; -- Cantidad ya vendida
+BEGIN
+    SELECT limite INTO v_limite 
+    FROM CATALOGOS_LEGO 
+    WHERE cod_juguete = p_cod_juguete AND id_pais = p_id_pais;
+    SELECT NVL(SUM(cant_prod), 0) INTO v_ya_vendido
+    FROM DETALLES_FACTURA_ONLINE
+    WHERE cod_juguete = p_cod_juguete AND id_pais = p_id_pais;
+
+    IF (v_ya_vendido + p_cantidad_n) > v_limite THEN
+        RAISE_APPLICATION_ERROR(-20060, 'Stock insuficiente en catálogo. Disponible: ' || (v_limite - v_ya_vendido));
+    END IF;
+END;
+/
+/*Veo limite como el numero de productos que se pueden vender en ese pais.
+Como lo que hay en stock.
+Si estoy equivocado lo que hay que hacer es cambiar la logica del procedimiento*/
+
+
+--Procedimiento "Carrito de Compras" venta online
+CREATE OR REPLACE PROCEDURE CARGARPRODUCTOSONLINE(
+    p_nro_fact    IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_cantidad    IN NUMBER
+) IS
+    v_id_pais NUMBER;
+    v_next_det NUMBER;
+BEGIN
+    SELECT c.id_pais_resi INTO v_id_pais
+    FROM CLIENTES c, FACTURAS_ONLINE f
+    WHERE c.id_lego = f.id_cliente
+    AND f.nro_fact = p_nro_fact;
+    VALIDARSTOCKONLINE(p_cod_juguete, v_id_pais, p_cantidad);
+    SELECT NVL(MAX(id_det_fact), 0) + 1 INTO v_next_det
+    FROM DETALLES_FACTURA_ONLINE 
+    WHERE nro_fact = p_nro_fact;
+    INSERT INTO DETALLES_FACTURA_ONLINE (
+        nro_fact, 
+        id_det_fact, 
+        cant_prod, 
+        tipo_cli, 
+        cod_juguete, 
+        id_pais
+    )
+    VALUES (
+        p_nro_fact, 
+        v_next_det, 
+        p_cantidad, 
+        'A', 
+        p_cod_juguete, 
+        v_id_pais
+    );
+END;
+/
+
+--Procedimiento para "Cierre de caja" en venta Online
+CREATE OR REPLACE PROCEDURE FINALIZARVENTAONLINE(p_nro_fact IN NUMBER) IS
+    v_total NUMBER(10,2);
+    v_puntos NUMBER(5);
+    v_id_pais NUMBER;
+BEGIN
+    SELECT id_pais 
+    INTO v_id_pais 
+    FROM DETALLES_FACTURA_ONLINE 
+    WHERE nro_fact = p_nro_fact 
+    AND ROWNUM = 1; 
+    v_total := calcular_total_con_puntos(p_nro_fact, 'ONLINE', v_id_pais);
+    IF v_total > 0 THEN
+        v_puntos := FUNC_CALCULAR_PUNTOS(v_total); --No recuerdo bien si esta función calculaba bien los puntos, hay que chequearlo
+    ELSE
+        v_puntos := 0;
+    END IF;
+    UPDATE FACTURAS_ONLINE 
+    SET total = v_total, 
+        ptos_generados = v_puntos
+    WHERE nro_fact = p_nro_fact;
+    --COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Venta finalizada con éxito.');
+END;
+/
