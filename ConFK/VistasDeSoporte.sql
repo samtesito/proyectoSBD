@@ -19,3 +19,7 @@ edad_juguete, precio_juguete,clasfc_precio) AS SELECT t.id, t.nombre, t.tipo,
 j.codigo, j.nombre, j.rgo_edad, h.precio, j.rgo_precio from
 TEMAS t, JUGUETES j, HISTORICO_PRECIOS_JUGUETES h WHERE t.id = j.id_tema AND 
 j.codigo = h.cod_juguete AND h.f_fin IS NULL; 
+
+--5) Vista de Clientes Exclusivamente
+CREATE VIEW V_CLIENTES(id_cliente,nombrecliente,apellidocliente) 
+AS SELECT c.id_lego, c.prim_nom, c.prim_ape from CLIENTES c;
