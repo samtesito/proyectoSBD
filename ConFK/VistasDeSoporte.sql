@@ -28,16 +28,22 @@ AS SELECT c.id_lego, c.prim_nom, c.prim_ape from CLIENTES c;
 CREATE OR REPLACE VIEW V_CATALOGO_ONLINE AS
 SELECT 
     c.id_pais,
+    t.id as id_tema,
+    t.nombre as nombre_tema,
+    t.tipo as tipo_tema,
     j.codigo AS id_producto,
     j.nombre AS nombre_producto,
+    j.rgo_edad as edad_producto,
     h.precio AS precio_usd,
     mostrar_precio_local(h.precio, c.id_pais) AS precio_local,
     c.limite AS stock_maximo
 FROM 
+    temas t,
     CATALOGOS_LEGO c, 
     JUGUETES j, 
     HISTORICO_PRECIOS_JUGUETES h
 WHERE 
     c.cod_juguete = j.codigo
+    AND t.id = j.id_tema
     AND j.codigo = h.cod_juguete
     AND h.f_fin IS NULL;
