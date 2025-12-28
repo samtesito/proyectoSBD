@@ -18,8 +18,6 @@ END;
 
 --1.1 PROCEDIMIENTO PARA GENERAR ENTRADAS
 
-CREATE SEQUENCE id_entrada INCREMENT BY 1 START WITH 1;
-
 CREATE OR REPLACE PROCEDURE generar_entradas(
     p_f_tour IN DATE,   
     p_n_fact IN NUMBER  
@@ -141,9 +139,6 @@ END;
 
 
 ---Procedimiento para generar inscripcion
-CREATE SEQUENCE nfacturatour
-    increment by 1
-    start with 1;
 
 CREATE OR REPLACE PROCEDURE agregarparticipante(
     finsc IN FECHAS_TOUR.f_inicio%TYPE,

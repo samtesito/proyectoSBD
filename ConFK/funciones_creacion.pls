@@ -325,3 +325,14 @@ BEGIN
     RETURN ROUND(v_normal, 2);
 END;
 /
+
+CREATE OR REPLACE FUNCTION buscapais(
+    id_cliente IN NUMBER
+)RETURN NUMBER IS
+    id_pais NUMBER;
+BEGIN
+    SELECT p.id INTO id_pais FROM CLIENTES c, PAISES p
+    WHERE c.id_lego=id_cliente AND p.id=c.id_pais_resi;
+    RETURN id_pais;
+END;
+/
