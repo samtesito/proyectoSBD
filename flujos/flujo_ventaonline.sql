@@ -46,6 +46,3 @@ END;
 SELECT nro_fact, f_emision, total, ptos_generados 
 FROM FACTURAS_ONLINE 
 WHERE nro_fact = :nro_factura_act;
-
-/*Creo que entiendo a que se referia Violeta con lo del problema con los loops.
-Ahora mismo solo puedo comprar un producto por factura, pero voy a ver si logro cambiar eso*/
