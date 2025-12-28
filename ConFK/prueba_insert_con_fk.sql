@@ -301,25 +301,25 @@ INSERT INTO TEMAS (id, nombre, tipo, descripcion, id_tema_padre) VALUES
 COMMIT;
 
 -- JUGUETES
-INSERT INTO JUGUETES VALUES (2011, 'Batman Key Chain', 'Llavero oficial LEGO Batman 854235', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 1);
-INSERT INTO JUGUETES VALUES (2012, 'Batman Mech Armor', 'Armadura mecánica de Batman 76270', 101, '7A8', 'B', 'L', TRUE, NULL, 'Manual incluido', 154);
-INSERT INTO JUGUETES VALUES (2013, 'Batgirl Key Chain', 'Llavero oficial LEGO Batgirl 854320', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 1);
-INSERT INTO JUGUETES VALUES (2014, 'Batman 8in1 Figure', 'Figura LEGO Batman 8 en 1 40748', 101, '9A11', 'C', 'L', TRUE, NULL, 'Guía paso a paso incluida', 340);
-INSERT INTO JUGUETES VALUES (3011, 'The Milky Way Galaxy', 'LEGO Art La Vía Láctea 31212', 102, '12+', 'D', 'L', TRUE, NULL, 'Manual detallado', 3167);
-INSERT INTO JUGUETES VALUES (3012, 'LOVE', 'LEGO Art LOVE 31214', 102, '12+', 'C', 'L', TRUE, NULL, 'Guía incluida', 559);
-INSERT INTO JUGUETES VALUES (3013, 'Mona Lisa', 'LEGO Art Mona Lisa 31213', 102, '12+', 'C', 'L', TRUE, NULL, 'Guía paso a paso', 3110);
-INSERT INTO JUGUETES VALUES (3014, 'The Fauna Collection - Tiger', 'LEGO Art Fauna: Tigre 31217', 102, '12+', 'C', 'L', TRUE, NULL, 'Manual incluido', 637);
+INSERT INTO JUGUETES VALUES (2011, 'Batman Key Chain', 'Llavero oficial LEGO Batman 854235', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 152);
+INSERT INTO JUGUETES VALUES (2012, 'Batman Mech Armor', 'Armadura mecánica de Batman 76270', 101, '7A8', 'B', 'L', TRUE, NULL, 'Manual incluido');
+INSERT INTO JUGUETES VALUES (2013, 'Batgirl Key Chain', 'Llavero oficial LEGO Batgirl 854320', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 146);
+INSERT INTO JUGUETES VALUES (2014, 'Batman 8in1 Figure', 'Figura LEGO Batman 8 en 1 40748', 101, '9A11', 'C', 'L', TRUE, NULL, 'Guía paso a paso incluida', NULL);
+INSERT INTO JUGUETES VALUES (3011, 'The Milky Way Galaxy', 'LEGO Art La Vía Láctea 31212', 102, '12+', 'D', 'L', TRUE, NULL, 'Manual detallado', NULL);
+INSERT INTO JUGUETES VALUES (3012, 'LOVE', 'LEGO Art LOVE 31214', 102, '12+', 'C', 'L', TRUE, NULL, 'Guía incluida', NULL);
+INSERT INTO JUGUETES VALUES (3013, 'Mona Lisa', 'LEGO Art Mona Lisa 31213', 102, '12+', 'C', 'L', TRUE, NULL, 'Guía paso a paso', NULL);
+INSERT INTO JUGUETES VALUES (3014, 'The Fauna Collection - Tiger', 'LEGO Art Fauna: Tigre 31217', 102, '12+', 'C', 'L', TRUE, NULL, 'Manual incluido', NULL);
 INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", id_setpadre, instruc, piezas) VALUES 
-(408, 'Iron Spider-Man', 'Figura de Spider-Man con armadura Iron Spider y alas mecánicas', 306, '9A11', 'C', 'L', TRUE, NULL, 'Instrucciones con detalles técnicos', 412),
-(409, 'Dancing Groot', 'Groot bebé con funciones de baile y expresiones animadas', 306, '7A8', 'B', 'L', TRUE, NULL, 'Guía paso a paso interactiva', 298),
-(410, 'Miles Morales Mask', 'Casco de Miles Morales con detalles luminosos y soporte', 306, '12+', 'C', 'L', TRUE, 408, 'Instrucciones avanzadas con LEDs', 156),
-(411, 'Daily Bugle', 'Edificio icónico del Daily Bugle con oficinas y figuras', 306, 'ADULTOS', 'D', 'L', TRUE, NULL, 'Manual profesional 4D', 3724);
+(408, 'Iron Spider-Man', 'Figura de Spider-Man con armadura Iron Spider y alas mecánicas', 306, '9A11', 'C', 'L', FALSE, NULL, 'Instrucciones con detalles técnicos', 412),
+(409, 'Dancing Groot', 'Groot bebé con funciones de baile y expresiones animadas', 306, '7A8', 'B', 'L', TRUE, NULL, 'Guía paso a paso interactiva', NULL),
+(410, 'Miles Morales Mask', 'Casco de Miles Morales con detalles luminosos y soporte', 306, '12+', 'C', 'L', FALSE, 408, 'Instrucciones avanzadas con LEDs', 156),
+(411, 'Daily Bugle', 'Edificio icónico del Daily Bugle con oficinas y figuras', 306, 'ADULTOS', 'D', 'L', FALSE, NULL, 'Manual profesional 4D', 3724);
 
 INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", id_setpadre, instruc, piezas) VALUES 
-(412, 'Eeyore BrickHeadz', 'Figurine BrickHeadz de Eeyore con orejas colgantes', 307, '5A6', 'A', 'O', TRUE, NULL, 'Instrucciones simples coloridas', 127),
-(413, 'Wednesday y Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', 251),
-(414, 'Dumbo BrickHeadz', 'Figura BrickHeadz de Dumbo con orejas grandes', 307, '3A4', 'A', 'O', TRUE, NULL, 'Instrucciones básicas grandes', 189),
-(415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', TRUE, 412, 'Instrucciones con variaciones animales', 140);
+(412, 'Eeyore BrickHeadz', 'Figurine BrickHeadz de Eeyore con orejas colgantes', 307, '5A6', 'A', 'O', TRUE, NULL, 'Instrucciones simples coloridas', NULL),
+(413, 'Wednesday y Enid', 'Duo BrickHeadz de Wednesday Addams y Enid Sinclair', 307, '9A11', 'B', 'O', TRUE, NULL, 'Guía dual con personalización', NULL),
+(414, 'Dumbo BrickHeadz', 'Figura BrickHeadz de Dumbo con orejas grandes', 307, '3A4', 'A', 'O', FALSE, NULL, 'Instrucciones básicas grandes', 189),
+(415, 'Red Panda Mei', 'BrickHeadz de Mei como panda roja de Turning Red', 307, '7A8', 'B', 'O', FALSE, 412, 'Instrucciones con variaciones animales', 140);
 
 COMMIT;
 
