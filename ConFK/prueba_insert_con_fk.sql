@@ -302,7 +302,7 @@ COMMIT;
 
 -- JUGUETES
 INSERT INTO JUGUETES VALUES (2011, 'Batman Key Chain', 'Llavero oficial LEGO Batman 854235', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 152);
-INSERT INTO JUGUETES VALUES (2012, 'Batman Mech Armor', 'Armadura mecánica de Batman 76270', 101, '7A8', 'B', 'L', TRUE, NULL, 'Manual incluido');
+INSERT INTO JUGUETES VALUES (2012, 'Batman Mech Armor', 'Armadura mecánica de Batman 76270', 101, '7A8', 'B', 'L', TRUE, NULL, 'Manual incluido',NULL);
 INSERT INTO JUGUETES VALUES (2013, 'Batgirl Key Chain', 'Llavero oficial LEGO Batgirl 854320', 101, '5A6', 'A', 'L', FALSE, NULL, NULL, 146);
 INSERT INTO JUGUETES VALUES (2014, 'Batman 8in1 Figure', 'Figura LEGO Batman 8 en 1 40748', 101, '9A11', 'C', 'L', TRUE, NULL, 'Guía paso a paso incluida', NULL);
 INSERT INTO JUGUETES VALUES (3011, 'The Milky Way Galaxy', 'LEGO Art La Vía Láctea 31212', 102, '12+', 'D', 'L', TRUE, NULL, 'Manual detallado', NULL);
@@ -331,7 +331,6 @@ INSERT INTO PRODUCTOS_RELACIONADOS (id_producto, id_prod_relaci) VALUES
 (410, 408),
 (408, 411), 
 (409, 411), 
-
 (412, 414), 
 (414, 412),
 (415, 414);
@@ -384,7 +383,7 @@ VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 40, 2001),
 COMMIT;
 
 -- DETALLES_FACTURA_ONLINE
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_pais)
+INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
 VALUES (700001, 70001, 2, 'A', 408, 58);
 
 COMMIT;
@@ -396,13 +395,13 @@ VALUES (408, 10, 301, TO_DATE('2025-10-15','YYYY-MM-DD'), 30);
 COMMIT;
 
 -- DETALLES_FACTURA_TIENDA
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, codigo, id_tienda, nro_lote)
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote)
 VALUES (500001, 80001, 3, 'M', 408, 10, 301);
 
 COMMIT;
 
 -- DESCUENTOS
-INSERT INTO DESCUENTOS (codigo, id_tienda, nro_lote, id_desc, fecha, cant)
+INSERT INTO DESCUENTOS (cod_juguete, id_tienda, nro_lote, id_desc, fecha, cant)
 VALUES (408, 10, 301, 90001, TO_DATE('2025-12-05','YYYY-MM-DD'), 15);
 
 COMMIT;

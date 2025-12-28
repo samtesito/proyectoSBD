@@ -1,69 +1,60 @@
 ------------------------------------------------------------
--- 1. Poblar FACTURAS_TIENDA con 10 facturas de distintas fechas
+-- 1. FACTURAS_TIENDA (10 registros)
+-- Facturas reales basadas en clientes y tiendas existentes
 ------------------------------------------------------------
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1001, DATE '2025-12-13', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1002, DATE '2025-12-13', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1003, DATE '2025-12-13', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1004, DATE '2025-12-13', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1005, DATE '2025-12-13', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1006, DATE '2025-12-14', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1007, DATE '2025-12-14', 1);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1008, DATE '2025-12-15', 2);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1009, DATE '2025-12-15', 2);
-INSERT INTO FACTURAS_TIENDA (nro_fact, f_emision, id_tienda) VALUES (1010, DATE '2025-12-16', 2);
+INSERT INTO FACTURAS_TIENDA VALUES (600001, 1001, 10, DATE '2025-12-13', 150.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600002, 1002, 10, DATE '2025-12-13', 200.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600003, 1003, 10, DATE '2025-12-13', 175.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600004, 1004, 10, DATE '2025-12-13', 220.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600005, 1005, 10, DATE '2025-12-13', 180.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600006, 1006, 11, DATE '2025-12-14', 250.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600007, 1007, 11, DATE '2025-12-14', 300.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600008, 1008, 12, DATE '2025-12-15', 190.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600009, 1009, 12, DATE '2025-12-15', 210.00);
+INSERT INTO FACTURAS_TIENDA VALUES (600010, 1001, 13, DATE '2025-12-16', 260.00);
 
 ------------------------------------------------------------
--- 2. Poblar DETALLES_FACTURA_TIENDA con 10 registros
--- Cada detalle vincula una factura con un juguete, lote y cantidad
+-- 2. LOTES_SET_TIENDA (10 registros)
+-- Lotes válidos según tiendas y juguetes existentes
 ------------------------------------------------------------
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1001, 501, 1, 2001, 5, 501);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1002, 501, 1, 2001, 3, 501);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1003, 502, 1, 2002, 4, 502);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1004, 502, 1, 2002, 6, 502);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1005, 503, 1, 2003, 2, 503);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1006, 503, 1, 2003, 7, 503);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1007, 504, 1, 2004, 8, 504);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1008, 504, 2, 2004, 5, 504);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1009, 505, 2, 2005, 9, 505);
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, cod_juguete, id_tienda, nro_lote, cant_prod, codigo)
-VALUES (1010, 505, 2, 2005, 4, 505);
+INSERT INTO LOTES_SET_TIENDA VALUES (408, 10, 1, DATE '2025-10-01', 40);
+INSERT INTO LOTES_SET_TIENDA VALUES (408, 10, 2, DATE '2025-10-02', 35);
+INSERT INTO LOTES_SET_TIENDA VALUES (409, 10, 1, DATE '2025-10-03', 50);
+INSERT INTO LOTES_SET_TIENDA VALUES (410, 10, 1, DATE '2025-10-04', 45);
+INSERT INTO LOTES_SET_TIENDA VALUES (411, 10, 1, DATE '2025-10-05', 60);
+INSERT INTO LOTES_SET_TIENDA VALUES (412, 11, 1, DATE '2025-10-06', 55);
+INSERT INTO LOTES_SET_TIENDA VALUES (413, 11, 1, DATE '2025-10-07', 70);
+INSERT INTO LOTES_SET_TIENDA VALUES (414, 12, 1, DATE '2025-10-08', 80);
+INSERT INTO LOTES_SET_TIENDA VALUES (415, 12, 1, DATE '2025-10-09', 90);
+INSERT INTO LOTES_SET_TIENDA VALUES (2011, 13, 1, DATE '2025-10-10', 100);
 
 ------------------------------------------------------------
--- 3. Poblar DESCUENTOS con 10 registros iniciales
--- Estos sirven como base para verificar que el procedimiento inserta nuevos descuentos
+-- 3. DETALLES_FACTURA_TIENDA (10 registros)
+-- Cada detalle vincula factura + juguete + lote
+-- coherente con LOTES_SET_TIENDA
 ------------------------------------------------------------
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 501, 2001, DATE '2025-12-13', 2);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 502, 2002, DATE '2025-12-13', 1);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 503, 2003, DATE '2025-12-14', 3);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 504, 2004, DATE '2025-12-14', 2);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 2, 504, 2004, DATE '2025-12-15', 4);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 2, 505, 2005, DATE '2025-12-15', 5);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 2, 505, 2005, DATE '2025-12-16', 2);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 501, 2001, DATE '2025-12-13', 1);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 502, 2002, DATE '2025-12-13', 2);
-INSERT INTO DESCUENTOS (id_desc, id_tienda, cod_juguete, nro_lote, fecha, cant)
-VALUES (desce.NEXTVAL, 1, 503, 2003, DATE '2025-12-14', 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600001, 1, 3, 'A', 408, 10, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600002, 2, 2, 'M', 408, 10, 2);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600003, 3, 4, 'A', 409, 10, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600004, 4, 5, 'M', 410, 10, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600005, 5, 1, 'A', 411, 10, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600006, 6, 6, 'M', 412, 11, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600007, 7, 7, 'A', 413, 11, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600008, 8, 3, 'M', 414, 12, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600009, 9, 8, 'A', 415, 12, 1);
+INSERT INTO DETALLES_FACTURA_TIENDA VALUES (600010, 10, 2, 'M', 2011, 13, 1);
 
 ------------------------------------------------------------
--- Con este set de datos puedes ejecutar el procedimiento
--- y verificar que se inserten nuevos descuentos agregados
--- según las facturas y detalles de la fecha indicada.
+-- 4. DESCUENTOS (10 registros iniciales)
+-- Sirven para validar que el procedimiento inserta nuevos
 ------------------------------------------------------------
+INSERT INTO DESCUENTOS VALUES (408, 10, 1, 1, DATE '2025-12-10', 5);
+INSERT INTO DESCUENTOS VALUES (408, 10, 2, 2, DATE '2025-12-10', 3);
+INSERT INTO DESCUENTOS VALUES (409, 10, 1, 3, DATE '2025-12-11', 2);
+INSERT INTO DESCUENTOS VALUES (410, 10, 1, 4, DATE '2025-12-11', 4);
+INSERT INTO DESCUENTOS VALUES (411, 10, 1, 5, DATE '2025-12-11', 1);
+INSERT INTO DESCUENTOS VALUES (412, 11, 1, 6, DATE '2025-12-12', 6);
+INSERT INTO DESCUENTOS VALUES (413, 11, 1, 7, DATE '2025-12-12', 2);
+INSERT INTO DESCUENTOS VALUES (414, 12, 1, 8, DATE '2025-12-12', 3);
+INSERT INTO DESCUENTOS VALUES (415, 12, 1, 9, DATE '2025-12-12', 4);
+INSERT INTO DESCUENTOS VALUES (2011, 13, 1, 10, DATE '2025-12-12', 2);

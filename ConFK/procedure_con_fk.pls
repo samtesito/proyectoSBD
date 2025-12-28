@@ -109,16 +109,17 @@ CREATE SEQUENCE desce
     start with 1;
 
 CREATE OR REPLACE PROCEDURE generar_desc_lote_por_fecha(
-    p_fecha IN DATE DEFAULT SYSDATE--,
-    --p_id_tienda IN NUMBER,
-    --p_cod_juguete IN NUMBER,
-    --p_nro_lote IN NUMBER
+    p_fecha IN DATE DEFAULT SYSDATE,
+    p_id_tienda IN NUMBER
 )
 IS  
     CURSOR desc_por_lote IS
         (SELECT d.cod_juguete, d.id_tienda, d.nro_lote, sum(d.cant_prod) total_desc
-            FROM DETALLES_FACTURA_TIENDA d 
-            WHERE (d.nro_fact IN (SELECT nro_fact FROM FACTURAS_TIENDA WHERE f_emision = p_fecha)) 
+            FROM (SELECT nro_fact 
+                    FROM FACTURAS_TIENDA 
+                    WHERE f_emision = p_fecha AND id_tienda = p_id_tienda) x, 
+                DETALLES_FACTURA_TIENDA d 
+            WHERE x.nro_fact = d.nro_fact
             GROUP BY d.cod_juguete, d.id_tienda, d.nro_lote);
     --descuento desc_por_lote%ROWTYPE;
 BEGIN
@@ -132,11 +133,15 @@ BEGIN
 END generar_desc_lote_por_fecha;
 /
 
-BEGIN
-generar_desc_lote_por_fecha(DATE '2025-12-13');
+/*BEGIN
+    generar_desc_lote_por_fecha(
+        p_fecha      => DATE '2025-12-13',
+        p_id_tienda  => 10,
+        p_cod_juguete => 408,
+        p_nro_lote   => 1
+    );
 END;
-/
-
+/*/
 
 ---Procedimiento para generar inscripcion
 
