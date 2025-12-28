@@ -19,7 +19,8 @@ BEGIN
         SELECT NVL(SUM(d.cant_prod * h.precio), 0)
         INTO v_total
         FROM DETALLES_FACTURA_TIENDA d
-        JOIN LOTES_SET_TIENDA l ON (d.codigo, d.id_tienda, d.nro_lote) = (l.cod_juguete, l.id_tienda, l.nro_lote)
+        -- CORRECCIÓN AQUÍ: cambié d.codigo por d.cod_juguete
+        JOIN LOTES_SET_TIENDA l ON (d.cod_juguete, d.id_tienda, d.nro_lote) = (l.cod_juguete, l.id_tienda, l.nro_lote)
         JOIN HISTORICO_PRECIOS_JUGUETES h ON l.cod_juguete = h.cod_juguete AND h.f_fin IS NULL
         WHERE d.nro_fact = p_nro_fact;
         
@@ -27,15 +28,19 @@ BEGIN
         SELECT NVL(SUM(d.cant_prod * h.precio), 0)
         INTO v_total
         FROM DETALLES_FACTURA_ONLINE d
-        JOIN CATALOGOS_LEGO c ON (d.codigo, d.id_pais) = (c.cod_juguete, c.id_pais)
+        -- CORRECCIÓN AQUÍ: cambié d.codigo por d.cod_juguete
+        JOIN CATALOGOS_LEGO c ON (d.cod_juguete, d.id_pais) = (c.cod_juguete, c.id_pais)
         JOIN HISTORICO_PRECIOS_JUGUETES h ON c.cod_juguete = h.cod_juguete AND h.f_fin IS NULL
         WHERE d.nro_fact = p_nro_fact;
     ELSE
-        RAISE_APPLICATION_ERROR(-20050, 'Tipo de factura invalido:' || p_tipo_factura);
+        RAISE_APPLICATION_ERROR(-20050, 'Tipo de factura invalido: ' || p_tipo_factura);
     END IF;
+    
     RETURN v_total;
 END;
 /
+
+
 
 
 
@@ -164,7 +169,7 @@ BEGIN
     FROM FACTURAS_ONLINE fo
     WHERE fo.id_cliente = p_id_cliente 
     AND fo.ptos_generados = 0
-    AND fo.total = (
+    AND fo.total <= (
         FUNC_CALCULAR_TOTAL_ONLINE(fo.nro_fact, 'ONLINE', 
             (SELECT id_pais 
             FROM DETALLES_FACTURA_ONLINE 
@@ -258,9 +263,10 @@ BEGIN
     FROM DETALLES_FACTURA_TIENDA d
     JOIN FACTURAS_TIENDA f ON d.nro_fact = f.nro_fact
     WHERE d.id_tienda = p_id_tienda
-      AND d.codigo = p_codigo
+      AND d.cod_juguete = p_codigo  -- CORRECCIÓN AQUÍ: cambié d.codigo por d.cod_juguete
       AND d.nro_lote = p_nro_lote
       AND TRUNC(f.f_emision) = TRUNC(SYSDATE); -- Solo ventas de hoy
+      
     RETURN NVL(v_total_vendido, 0);
 
 EXCEPTION
@@ -269,6 +275,9 @@ EXCEPTION
 END;
 /
 
+
+
+
 CREATE OR REPLACE FUNCTION calcular_total_con_puntos(
     p_nro_fact IN NUMBER,
     p_tipo_factura IN VARCHAR2,
@@ -276,18 +285,32 @@ CREATE OR REPLACE FUNCTION calcular_total_con_puntos(
 ) RETURN NUMBER IS
     v_subtotal     NUMBER(10,2);
     v_normal       NUMBER(10,2);
-    v_puntos       NUMBER(5);
-    v_es_gratuita  BOOLEAN;
+    v_id_cliente   NUMBER; -- Variable nueva para capturar el ID
+    v_es_gratuita  BOOLEAN := FALSE;
 BEGIN
     -- 1. Calcular subtotal normal
     v_subtotal := calcular_subtotal_factura(p_nro_fact, p_tipo_factura);
     
-    -- 2. Verificar si cliente tiene puntos suficientes (≥500)
-    v_es_gratuita := es_gratuita(
-        (SELECT id_cliente FROM FACTURAS_ONLINE WHERE nro_fact = p_nro_fact)
-    );
+    -- 2. Verificar si cliente tiene puntos
+    -- Primero obtenemos el ID del cliente en una variable    
+    IF p_tipo_factura = 'ONLINE' THEN
+        BEGIN
+            SELECT id_cliente 
+            INTO v_id_cliente 
+            FROM FACTURAS_ONLINE 
+            WHERE nro_fact = p_nro_fact;
+            
+            -- Ahora pasamos la variable a la función
+            v_es_gratuita := es_gratuita(v_id_cliente);
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                v_es_gratuita := FALSE;
+        END;
+    ELSE
+        v_es_gratuita := FALSE; 
+    END IF;
     
-    -- 3. Si es gratuita → TOTAL = 0
+    -- 3. Si es gratuita -> TOTAL = 0
     IF v_es_gratuita THEN
         RETURN 0;
     END IF;
@@ -300,5 +323,16 @@ BEGIN
     END IF;
     
     RETURN ROUND(v_normal, 2);
+END;
+/
+
+CREATE OR REPLACE FUNCTION buscapais(
+    id_cliente IN NUMBER
+)RETURN NUMBER IS
+    id_pais NUMBER;
+BEGIN
+    SELECT p.id INTO id_pais FROM CLIENTES c, PAISES p
+    WHERE c.id_lego=id_cliente AND p.id=c.id_pais_resi;
+    RETURN id_pais;
 END;
 /

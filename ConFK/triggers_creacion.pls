@@ -179,13 +179,13 @@ BEGIN
     -- Obtiene limite del catalogo para este pais
     SELECT limite INTO v_limite
     FROM CATALOGOS_LEGO
-    WHERE id_pais = :NEW.id_pais AND cod_juguete = :NEW.codigo;
+    WHERE id_pais = :NEW.id_pais AND cod_juguete = :NEW.cod_juguete;
     
     -- Suma las cantidades existentes en esta factura para este juguete
     SELECT COALESCE(SUM(cant_prod), 0) INTO v_cant_actual
     FROM DETALLES_FACTURA_ONLINE
     WHERE nro_fact = :NEW.nro_fact 
-    AND codigo = :NEW.codigo 
+    AND cod_juguete = :NEW.cod_juguete 
     AND id_pais = :NEW.id_pais;
     
     v_total_cant := v_cant_actual + :NEW.cant_prod;
@@ -193,7 +193,7 @@ BEGIN
     IF v_total_cant > v_limite THEN
         RAISE_APPLICATION_ERROR(-20012, 
             'Excede limite catalogo: ' || v_total_cant || ' > ' || v_limite || 
-            ' para codigo ' || :NEW.codigo || ' en pais ' || :NEW.id_pais);
+            ' para codigo ' || :NEW.cod_juguete || ' en pais ' || :NEW.id_pais);
     END IF;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -245,11 +245,11 @@ END;
 -- 1.11. Validar que la fecha_inicio de fecha tour no pasada.
 -- Regla: fecha_inicio debe ser actual o superior
 CREATE OR REPLACE TRIGGER trg_no_insertar_fecha_pasada
-BEFORE INSERT ON FECHAS_TOUR
+BEFORE INSERT ON INSCRIPCIONES_TOUR
 FOR EACH ROW
 BEGIN
     IF :NEW.f_inicio < TRUNC(SYSDATE) THEN
-        RAISE_APPLICATION_ERROR(-20016, 'Error: La fecha de inicio del tour no puede ser anterior a la fecha actual.');
+        RAISE_APPLICATION_ERROR(-20016, 'No se puede inscribir en un tour ya pasado.');
     END IF;
 END;
 /
@@ -323,9 +323,49 @@ BEGIN
 END;
 /
 
+--1.15 Validacion de que el cliente no se inscriba dos veces
+CREATE OR REPLACE TRIGGER trg_inscripcionduplicada
+BEFORE INSERT ON DETALLES_INSCRITOS
+FOR EACH ROW
+DECLARE
+    cont NUMBER;
+BEGIN
+    -- Validación para el cliente
+    SELECT COUNT(*) INTO cont FROM DETALLES_INSCRITOS 
+    WHERE fecha_inicio = :NEW.fecha_inicio 
+    AND id_cliente = :NEW.id_cliente AND id_cliente IS NOT NULL;
 
+    IF cont > 0 THEN
+        RAISE_APPLICATION_ERROR(-20501, 'El cliente ya está inscrito en esta fecha.');
+    END IF;
 
+    -- Validación para el visitante 
+    SELECT COUNT(*) INTO cont FROM DETALLES_INSCRITOS 
+    WHERE fecha_inicio = :NEW.fecha_inicio 
+    AND id_visit = :NEW.id_visit AND id_visit IS NOT NULL;
 
+    IF cont > 0 THEN
+        RAISE_APPLICATION_ERROR(-20501, 'El visitante ya está inscrito en esta fecha.');
+    END IF;
+END;
+/
 
+--1.16 Validacion de que no se meta en una factura un producto duplicado
+CREATE OR REPLACE TRIGGER trg_ventaonlineduplicada
+BEFORE INSERT ON DETALLES_FACTURA_ONLINE
+FOR EACH ROW
+DECLARE
+    cont NUMBER;
+BEGIN
+    -- Validación para el cliente
+    SELECT COUNT(*) INTO cont FROM DETALLES_FACTURA_ONLINE
+    WHERE nro_fact = :NEW.nro_fact 
+    AND cod_juguete = :NEW.cod_juguete;
+
+    IF cont > 0 THEN
+        RAISE_APPLICATION_ERROR(-20501, 'Ya se registro el producto en esta factura.');
+    END IF;
+END;
+/
 
 

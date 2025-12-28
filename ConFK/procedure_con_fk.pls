@@ -18,8 +18,6 @@ END;
 
 --1.1 PROCEDIMIENTO PARA GENERAR ENTRADAS
 
-CREATE SEQUENCE id_entrada INCREMENT BY 1 START WITH 1;
-
 CREATE OR REPLACE PROCEDURE generar_entradas(
     p_f_tour IN DATE,   
     p_n_fact IN NUMBER  
@@ -137,3 +135,202 @@ END generar_desc_lote_por_fecha;
 BEGIN
 generar_desc_lote_por_fecha(DATE '2025-12-13');
 END;
+/
+
+
+---Procedimiento para generar inscripcion
+
+CREATE OR REPLACE PROCEDURE agregarparticipante(
+    finsc IN FECHAS_TOUR.f_inicio%TYPE,
+    nrofactinsc IN INSCRIPCIONES_TOUR.nro_fact%TYPE,
+    opcioninsc IN varchar2,
+    id_inscrito IN CLIENTES.id_lego%TYPE
+) IS
+id_detinsc NUMBER;
+BEGIN
+    SELECT COUNT (*) into id_detinsc from DETALLES_INSCRITOS where fecha_inicio=finsc AND
+    nro_fact=nrofactinsc;
+    IF UPPER(opcioninsc) = 'C' THEN
+        INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_cliente, id_visit)
+        VALUES (finsc, nrofactinsc, id_detinsc+1, id_inscrito, NULL);
+    ELSIF UPPER(opcioninsc) = 'V' THEN 
+        INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_cliente, id_visit)
+        VALUES (finsc, nrofactinsc, id_detinsc+1, NULL, id_inscrito);
+    ELSE
+        RAISE_APPLICATION_ERROR(-20020, 'Tipo inválido: debe ser C o V');
+    END IF;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE ACTUALIZARINSCRIPCION(
+    finsc IN FECHAS_TOUR.f_inicio%TYPE,
+    nrofactinsc IN INSCRIPCIONES_TOUR.nro_fact%TYPE
+)IS
+    totalfact NUMBER;
+    preciotour NUMBER;
+    cantinscritos NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO cantinscritos FROM DETALLES_INSCRITOS WHERE
+    fecha_inicio=finsc AND nro_fact=nrofactinsc;
+    SELECT costo INTO preciotour FROM FECHAS_TOUR WHERE
+    f_inicio=finsc;
+    totalfact := cantinscritos * preciotour;
+    UPDATE INSCRIPCIONES_TOUR SET
+        estado='PAGADO',
+        total=totalfact
+    WHERE f_inicio=finsc AND nro_fact=nrofactinsc;
+END;
+/
+
+CREATE OR REPLACE PROCEDURE CONFIRMACIONINSCRIPCION(
+    finsc IN FECHAS_TOUR.f_inicio%TYPE,
+    nrofactinsc IN INSCRIPCIONES_TOUR.nro_fact%TYPE,
+    opcion IN varchar2
+) IS
+BEGIN
+    IF UPPER(opcion) = 'S' THEN
+        ACTUALIZARINSCRIPCION(finsc,nrofactinsc);
+        generar_entradas(finsc,nrofactinsc);
+    ELSIF UPPER(opcion) = 'N' THEN 
+        DBMS_OUTPUT.PUT_LINE('Se ha registrado la inscripcion como PENDIENTE.');
+    ELSE
+        RAISE_APPLICATION_ERROR(-20020, 'Tipo inválido: debe ser S o N');
+    END IF;
+END;
+/
+
+--Procedimiento para validar disponibilidad de producto en venta online
+CREATE OR REPLACE PROCEDURE VALIDARLIMITEONLINE(
+    p_cod_juguete IN NUMBER, -- Código del juguete
+    p_id_pais     IN NUMBER, -- ID del país
+    p_cantidad_n  IN NUMBER  -- Cantidad a comprar
+) IS
+    v_limite NUMBER; -- Se supone que es el stock disponible para el país
+BEGIN
+    SELECT limite INTO v_limite 
+    FROM CATALOGOS_LEGO 
+    WHERE cod_juguete = p_cod_juguete AND id_pais = p_id_pais;
+
+    IF p_cantidad_n > v_limite THEN
+        RAISE_APPLICATION_ERROR(-20060, 'Solicitud supera el limite disponible ' || (v_limite));
+    END IF;
+END;
+/
+
+
+--Procedimiento "Carrito de Compras" venta online
+CREATE OR REPLACE PROCEDURE CARGARPRODUCTOSONLINE(
+    p_nro_fact    IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_cantidad    IN NUMBER
+) IS
+    v_id_pais NUMBER;
+    v_next_det NUMBER;
+BEGIN
+    SELECT c.id_pais_resi INTO v_id_pais
+    FROM CLIENTES c, FACTURAS_ONLINE f
+    WHERE c.id_lego = f.id_cliente
+    AND f.nro_fact = p_nro_fact;
+    VALIDARLIMITEONLINE(p_cod_juguete, v_id_pais, p_cantidad);
+    SELECT NVL(MAX(id_det_fact), 0) + 1 INTO v_next_det
+    FROM DETALLES_FACTURA_ONLINE 
+    WHERE nro_fact = p_nro_fact;
+    INSERT INTO DETALLES_FACTURA_ONLINE (
+        nro_fact, 
+        id_det_fact, 
+        cant_prod, 
+        tipo_cli, 
+        cod_juguete, 
+        id_pais
+    )
+    VALUES (
+        p_nro_fact, 
+        v_next_det, 
+        p_cantidad, 
+        'A', 
+        p_cod_juguete, 
+        v_id_pais
+    );
+END;
+/
+
+--Procedimiento para "Cierre de caja" en venta Online
+CREATE OR REPLACE PROCEDURE FINALIZARVENTAONLINE(p_nro_fact IN NUMBER) IS
+    v_total NUMBER(10,2);
+    v_puntos NUMBER(5);
+    v_id_pais NUMBER;
+BEGIN
+    SELECT id_pais 
+    INTO v_id_pais 
+    FROM DETALLES_FACTURA_ONLINE 
+    WHERE nro_fact = p_nro_fact 
+    AND ROWNUM = 1; 
+    v_total := calcular_total_con_puntos(p_nro_fact, 'ONLINE', v_id_pais);
+    IF v_total > 0 THEN
+        v_puntos := FUNC_CALCULAR_PUNTOS(v_total); --No recuerdo bien si esta función calculaba bien los puntos, hay que chequearlo
+    ELSE
+        v_puntos := 0;
+    END IF;
+    UPDATE FACTURAS_ONLINE 
+    SET total = v_total, 
+        ptos_generados = v_puntos
+    WHERE nro_fact = p_nro_fact;
+    --COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Venta finalizada con éxito.');
+END;
+/
+
+
+--A CONTINUACIÓN LOS PROCEDURE PARA VENTA FISICA (POR AHORA)
+
+--Busca el lote con stock y lo devuelve al proceso de carga
+--Intenté hacer que busque en más de un lote y lo sume para la cantidad del producto pero no supe como hacerlo. Mañana volvería a probar. Ahora mismo lo que hace es que busca en un lote que cumpla con la cantidad solicitada.
+CREATE OR REPLACE PROCEDURE BUSCAR_Y_VALIDAR_LOTE(
+    p_cod_juguete IN NUMBER,
+    p_id_tienda   IN NUMBER,
+    p_cantidad    IN NUMBER,
+    p_lote_out    OUT NUMBER
+) IS
+BEGIN
+    SELECT nro_lote
+    INTO p_lote_out
+    FROM LOTES_SET_TIENDA
+    WHERE cod_juguete = p_cod_juguete
+    AND id_tienda = p_id_tienda
+    AND cant_prod >= p_cantidad
+    AND ROWNUM = 1; 
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20070, 'No hay stock suficiente en ningun lote de esta tienda.');
+END;
+/
+
+--Carga el producto y actualiza el total de la factura
+CREATE OR REPLACE PROCEDURE CARGAR_PRODUCTO_TIENDA(
+    p_nro_fact    IN NUMBER,
+    p_id_tienda   IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_cantidad    IN NUMBER
+) IS
+    v_lote_elegido NUMBER;
+    v_next_det     NUMBER;
+    v_total_act    NUMBER;
+BEGIN
+    BUSCAR_Y_VALIDAR_LOTE(p_cod_juguete, p_id_tienda, p_cantidad, v_lote_elegido);
+    SELECT NVL(MAX(id_det_fact), 0) + 1 INTO v_next_det
+    FROM DETALLES_FACTURA_TIENDA
+    WHERE nro_fact = p_nro_fact;
+    INSERT INTO DETALLES_FACTURA_TIENDA (
+        nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote
+    )
+    VALUES (
+        p_nro_fact, v_next_det, p_cantidad, 'A', p_cod_juguete, p_id_tienda, v_lote_elegido
+    );
+    v_total_act := FUNC_CALCULAR_TOTAL_TIENDA(p_nro_fact, 'TIENDA');
+    
+    UPDATE FACTURAS_TIENDA 
+    SET total = v_total_act 
+    WHERE nro_fact = p_nro_fact;
+END;
+/
