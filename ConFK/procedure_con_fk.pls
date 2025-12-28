@@ -279,3 +279,58 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Venta finalizada con éxito.');
 END;
 /
+
+
+--A CONTINUACIÓN LOS PROCEDURE PARA VENTA FISICA (POR AHORA)
+
+--Busca el lote con stock y lo devuelve al proceso de carga
+--Intenté hacer que busque en más de un lote y lo sume para la cantidad del producto pero no supe como hacerlo. Mañana volvería a probar. Ahora mismo lo que hace es que busca en un lote que cumpla con la cantidad solicitada.
+CREATE OR REPLACE PROCEDURE BUSCAR_Y_VALIDAR_LOTE(
+    p_cod_juguete IN NUMBER,
+    p_id_tienda   IN NUMBER,
+    p_cantidad    IN NUMBER,
+    p_lote_out    OUT NUMBER
+) IS
+BEGIN
+    SELECT nro_lote
+    INTO p_lote_out
+    FROM LOTES_SET_TIENDA
+    WHERE cod_juguete = p_cod_juguete
+    AND id_tienda = p_id_tienda
+    AND cant_prod >= p_cantidad
+    AND ROWNUM = 1; 
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20070, 'No hay stock suficiente en ningun lote de esta tienda.');
+END;
+/
+
+--Carga el producto y actualiza el total de la factura
+CREATE OR REPLACE PROCEDURE CARGAR_PRODUCTO_TIENDA(
+    p_nro_fact    IN NUMBER,
+    p_id_tienda   IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_cantidad    IN NUMBER
+) IS
+    v_lote_elegido NUMBER;
+    v_next_det     NUMBER;
+    v_total_act    NUMBER;
+BEGIN
+    BUSCAR_Y_VALIDAR_LOTE(p_cod_juguete, p_id_tienda, p_cantidad, v_lote_elegido);
+    SELECT NVL(MAX(id_det_fact), 0) + 1 INTO v_next_det
+    FROM DETALLES_FACTURA_TIENDA
+    WHERE nro_fact = p_nro_fact;
+    INSERT INTO DETALLES_FACTURA_TIENDA (
+        nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote
+    )
+    VALUES (
+        p_nro_fact, v_next_det, p_cantidad, 'A', p_cod_juguete, p_id_tienda, v_lote_elegido
+    );
+    v_total_act := FUNC_CALCULAR_TOTAL_TIENDA(p_nro_fact, 'TIENDA');
+    
+    UPDATE FACTURAS_TIENDA 
+    SET total = v_total_act 
+    WHERE nro_fact = p_nro_fact;
+END;
+/
