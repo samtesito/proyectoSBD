@@ -169,7 +169,7 @@ BEGIN
     FROM FACTURAS_ONLINE fo
     WHERE fo.id_cliente = p_id_cliente 
     AND fo.ptos_generados = 0
-    AND fo.total = (
+    AND fo.total <= (
         FUNC_CALCULAR_TOTAL_ONLINE(fo.nro_fact, 'ONLINE', 
             (SELECT id_pais 
             FROM DETALLES_FACTURA_ONLINE 

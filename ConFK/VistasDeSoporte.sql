@@ -36,7 +36,7 @@ SELECT
     j.rgo_edad as edad_producto,
     h.precio AS precio_usd,
     mostrar_precio_local(h.precio, c.id_pais) AS precio_local,
-    c.limite AS stock_maximo
+    c.limite AS cant_limite
 FROM 
     temas t,
     CATALOGOS_LEGO c, 

@@ -200,29 +200,22 @@ END;
 /
 
 --Procedimiento para validar disponibilidad de producto en venta online
-CREATE OR REPLACE PROCEDURE VALIDARSTOCKONLINE(
+CREATE OR REPLACE PROCEDURE VALIDARLIMITEONLINE(
     p_cod_juguete IN NUMBER, -- Código del juguete
     p_id_pais     IN NUMBER, -- ID del país
     p_cantidad_n  IN NUMBER  -- Cantidad a comprar
 ) IS
     v_limite NUMBER; -- Se supone que es el stock disponible para el país
-    v_ya_vendido NUMBER; -- Cantidad ya vendida
 BEGIN
     SELECT limite INTO v_limite 
     FROM CATALOGOS_LEGO 
     WHERE cod_juguete = p_cod_juguete AND id_pais = p_id_pais;
-    SELECT NVL(SUM(cant_prod), 0) INTO v_ya_vendido
-    FROM DETALLES_FACTURA_ONLINE
-    WHERE cod_juguete = p_cod_juguete AND id_pais = p_id_pais;
 
-    IF (v_ya_vendido + p_cantidad_n) > v_limite THEN
-        RAISE_APPLICATION_ERROR(-20060, 'Stock insuficiente en catálogo. Disponible: ' || (v_limite - v_ya_vendido));
+    IF p_cantidad_n > v_limite THEN
+        RAISE_APPLICATION_ERROR(-20060, 'Solicitud supera el limite disponible ' || (v_limite));
     END IF;
 END;
 /
-/*Veo limite como el numero de productos que se pueden vender en ese pais.
-Como lo que hay en stock.
-Si estoy equivocado lo que hay que hacer es cambiar la logica del procedimiento*/
 
 
 --Procedimiento "Carrito de Compras" venta online
@@ -238,7 +231,7 @@ BEGIN
     FROM CLIENTES c, FACTURAS_ONLINE f
     WHERE c.id_lego = f.id_cliente
     AND f.nro_fact = p_nro_fact;
-    VALIDARSTOCKONLINE(p_cod_juguete, v_id_pais, p_cantidad);
+    VALIDARLIMITEONLINE(p_cod_juguete, v_id_pais, p_cantidad);
     SELECT NVL(MAX(id_det_fact), 0) + 1 INTO v_next_det
     FROM DETALLES_FACTURA_ONLINE 
     WHERE nro_fact = p_nro_fact;

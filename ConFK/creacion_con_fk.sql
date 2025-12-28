@@ -129,7 +129,7 @@ CREATE TABLE FACTURAS_ONLINE (
     nro_fact NUMBER(8) CONSTRAINT pk_fact_onl PRIMARY KEY,
     f_emision DATE NOT NULL,
     id_cliente NUMBER(8) NOT NULL,
-    ptos_generados NUMBER(3) NOT NULL,
+    ptos_generados NUMBER(3),
     total NUMBER(8, 2),
     CONSTRAINT fk_factonl_clien FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_lego)
 );
