@@ -350,7 +350,7 @@ BEGIN
 END;
 /
 
---1.16 Validacion de que no se meta en una factura un producto duplicado
+--1.16 Validacion de que no se meta en una factura venta online un producto duplicado
 CREATE OR REPLACE TRIGGER trg_ventaonlineduplicada
 BEFORE INSERT ON DETALLES_FACTURA_ONLINE
 FOR EACH ROW
@@ -359,6 +359,24 @@ DECLARE
 BEGIN
     -- Validación para el cliente
     SELECT COUNT(*) INTO cont FROM DETALLES_FACTURA_ONLINE
+    WHERE nro_fact = :NEW.nro_fact 
+    AND cod_juguete = :NEW.cod_juguete;
+
+    IF cont > 0 THEN
+        RAISE_APPLICATION_ERROR(-20501, 'Ya se registro el producto en esta factura.');
+    END IF;
+END;
+/
+
+--1.16 Validacion de que no se meta en una factura venta fisica un producto duplicado
+CREATE OR REPLACE TRIGGER trg_ventafisicaduplicada
+BEFORE INSERT ON DETALLES_FACTURA_TIENDA
+FOR EACH ROW
+DECLARE
+    cont NUMBER;
+BEGIN
+    -- Validación para el cliente
+    SELECT COUNT(*) INTO cont FROM DETALLES_FACTURA_TIENDA
     WHERE nro_fact = :NEW.nro_fact 
     AND cod_juguete = :NEW.cod_juguete;
 

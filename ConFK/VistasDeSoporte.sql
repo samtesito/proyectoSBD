@@ -47,3 +47,14 @@ WHERE
     AND t.id = j.id_tema
     AND j.codigo = h.cod_juguete
     AND h.f_fin IS NULL;
+
+--7) Vista de Tiendas con Horarios de atencion
+CREATE OR REPLACE VIEW V_TIENDASCONHORARIO (id_tienda, nombre_tienda, nombre_pais, dia_atencion, hra_entrada, 
+hra_salida, direccion_tienda) AS SELECT t.id, t.nombre, p.nombre, h.dia, TO_CHAR(h.hora_entr, 'HH24:MI'),  
+TO_CHAR(h.hora_sal, 'HH24:MI'),  t.direccion FROM TIENDAS_LEGO t, PAISES p, 
+HORARIOS_ATENCION h WHERE t.id_pais = p.id AND t.id = h.id_tienda;
+
+--8) Vista de Tiendas sin horario de atencion
+CREATE OR REPLACE VIEW V_TIENDAS (id_tienda, nombre_tienda, nombre_pais, direccion) 
+AS SELECT t.id, t.nombre, p.nombre, t.direccion FROM TIENDAS_LEGO t, PAISES p 
+WHERE t.id_pais = p.id;

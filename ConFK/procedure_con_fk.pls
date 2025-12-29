@@ -339,3 +339,25 @@ BEGIN
     WHERE nro_fact = p_nro_fact;
 END;
 /
+
+CREATE OR REPLACE PROCEDURE VALIDARSITIENDAABIERTA(
+    id_tiendaing IN TIENDAS_LEGO.id%TYPE,
+    f_selec IN DATE
+)AS
+    hraentrada HORARIOS_ATENCION.hora_entr%TYPE;
+    hrasalida HORARIOS_ATENCION.hora_sal%TYPE;
+BEGIN
+    SELECT hora_entr, hora_sal INTO hraentrada, 
+    hrasalida FROM HORARIOS_ATENCION WHERE
+    id_tienda=id_tiendaing AND dia=TO_CHAR(f_selec, 'DY');
+    
+    IF TO_CHAR(f_selec, 'HH24:MI') < TO_CHAR(hraentrada, 'HH24:MI') OR
+    TO_CHAR(f_selec, 'HH24:MI') > TO_CHAR(hrasalida, 'HH24:MI') THEN
+        RAISE_APPLICATION_ERROR(-20121, 'Solicitud fuera del horario de atencion de la tienda.');
+    END IF;
+
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20120, 'La tienda no trabaja el día: ' || TO_CHAR(f_selec, 'DAY'));
+END;
+/
