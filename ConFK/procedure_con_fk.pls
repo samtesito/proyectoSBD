@@ -133,15 +133,15 @@ BEGIN
 END generar_desc_lote_por_fecha;
 /
 
-/*BEGIN
-    generar_desc_lote_por_fecha(
-        p_fecha      => DATE '2025-12-13',
-        p_id_tienda  => 10,
-        p_cod_juguete => 408,
-        p_nro_lote   => 1
+/*TESTING DEL DESCUENTO
+BEGIN 
+    generar_desc_lote_por_fecha( 
+        p_fecha => DATE '2025-12-13', 
+        p_id_tienda => 10
     );
-END;
-/*/
+END; 
+/
+*/
 
 ---Procedimiento para generar inscripcion
 
