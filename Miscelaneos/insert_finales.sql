@@ -1,3 +1,6 @@
+--hola chicos ignoren esto q se me fue con el github JAJAJAAJAJAJAJAAJJ
+--disculpen!!! era un archivo q tenia por ahi volando en el espacio y tiempo
+
 //paises
 INSERT INTO PAISES (id, nombre, gentilicio, continente, ue)
 VALUES (58, 'Venezuela', 'venezolano', 'AMERICA', FALSE);
