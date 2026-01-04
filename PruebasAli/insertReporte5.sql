@@ -2,6 +2,28 @@
 -- DATOS PARA REPORTE 5: VENTAS FÍSICAS (Top Productos)
 ------------------------------------------------------------
 
+-- Autorizar productos en Venezuela (ID 58)
+-- Nota: Usamos MERGE o INSERT con cuidado para evitar duplicados si ya existen
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) 
+SELECT 58, 409, 100 FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais=58 AND cod_juguete=409);
+
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) 
+SELECT 58, 2011, 100 FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais=58 AND cod_juguete=2011);
+
+-- Autorizar productos en Chile (ID 56)
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) 
+SELECT 56, 2012, 100 FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais=56 AND cod_juguete=2012);
+
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) 
+SELECT 56, 3012, 100 FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais=56 AND cod_juguete=3012);
+
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) 
+SELECT 56, 408, 100 FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais=56 AND cod_juguete=408);
+
+COMMIT;
+
+
+
 -- 1. Crear LOTES (Inventario) para poder vender en las tiendas
 -- Tienda 10 (Venezuela), Tienda 21 (Chile), Tienda 12 (Israel), Tienda 49 (Alemania - debes crearla si no está en el script base, usaré la 10 y 21 que sé que están)
 
