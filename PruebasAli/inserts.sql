@@ -450,13 +450,73 @@ COMMIT;
 
 
 --------------------DETALLES_INSCRITOS-----------------------
-INSERT INTO DETALLES_INSCRITOS(fecha_inicio, nro_fact, id_det_insc, id_visit) 
-VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 40, 2001),
-       (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 98, 2003);
+INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_visit) 
+VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 40, 2001);
+
+INSERT INTO DETALLES_INSCRITOS (fecha_inicio, nro_fact, id_det_insc, id_visit) 
+VALUES (TO_DATE('2026-02-20','YYYY-MM-DD'), 250, 98, 2003);
 
 COMMIT;
 
+DROP TRIGGER trg_inscripcionduplicada;
 
+CREATE OR REPLACE TRIGGER trg_inscripcion_compound
+FOR INSERT ON DETALLES_INSCRITOS
+COMPOUND TRIGGER
+
+    -- 1. Declaramos una estructura en memoria para guardar las filas temporales
+    TYPE t_row_info IS RECORD (
+        fecha_inicio DATE,
+        id_cliente   NUMBER,
+        id_visit     NUMBER
+    );
+    TYPE t_row_table IS TABLE OF t_row_info;
+    v_rows t_row_table := t_row_table();
+
+    -- 2. BEFORE EACH ROW: Guardamos los datos de la fila entrante en memoria
+    BEFORE EACH ROW IS
+    BEGIN
+        v_rows.EXTEND;
+        v_rows(v_rows.LAST).fecha_inicio := :NEW.fecha_inicio;
+        v_rows(v_rows.LAST).id_cliente   := :NEW.id_cliente;
+        v_rows(v_rows.LAST).id_visit     := :NEW.id_visit;
+    END BEFORE EACH ROW;
+
+    -- 3. AFTER STATEMENT: Ahora que Oracle terminó de escribir, validamos leyendo la tabla
+    AFTER STATEMENT IS
+        v_count NUMBER;
+    BEGIN
+        FOR i IN 1 .. v_rows.COUNT LOOP
+            
+            -- Validación para CLIENTES
+            IF v_rows(i).id_cliente IS NOT NULL THEN
+                SELECT COUNT(*) INTO v_count 
+                FROM DETALLES_INSCRITOS 
+                WHERE fecha_inicio = v_rows(i).fecha_inicio 
+                AND id_cliente = v_rows(i).id_cliente;
+                
+                -- Si count > 1 significa que encontró el que acabamos de insertar + otro anterior
+                IF v_count > 1 THEN 
+                   RAISE_APPLICATION_ERROR(-20501, 'El cliente ya está inscrito en esta fecha.');
+                END IF;
+            END IF;
+
+            -- Validación para VISITANTES
+            IF v_rows(i).id_visit IS NOT NULL THEN
+                SELECT COUNT(*) INTO v_count 
+                FROM DETALLES_INSCRITOS 
+                WHERE fecha_inicio = v_rows(i).fecha_inicio 
+                AND id_visit = v_rows(i).id_visit;
+                
+                IF v_count > 1 THEN
+                   RAISE_APPLICATION_ERROR(-20501, 'El visitante ya está inscrito en esta fecha.');
+                END IF;
+            END IF;
+            
+        END LOOP;
+    END AFTER STATEMENT;
+END;
+/
 
 
 
