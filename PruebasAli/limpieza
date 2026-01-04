@@ -1,0 +1,67 @@
+--------------------------------------------------------
+-- SCRIPT DE LIMPIEZA TOTAL (WIPE DATA)
+-- Borra todos los registros respetando FKs y Triggers
+--------------------------------------------------------
+
+-- 1. DESACTIVAR TRIGGERS DE SEGURIDAD (Para permitir borrar facturas)
+ALTER TRIGGER trg_no_delete_fact_tienda DISABLE;
+ALTER TRIGGER trg_no_delete_fact_online DISABLE;
+
+-- 2. BORRADO DE TABLAS (Orden Hijos -> Padres)
+
+-- Nivel 6: Detalles y dependencias profundas
+DELETE FROM DETALLES_FACTURA_ONLINE;
+DELETE FROM DETALLES_FACTURA_TIENDA;
+DELETE FROM DESCUENTOS;
+DELETE FROM DETALLES_INSCRITOS;
+DELETE FROM ENTRADAS;
+DELETE FROM TELEFONOS;
+DELETE FROM PRODUCTOS_RELACIONADOS;
+
+-- Nivel 5: Tablas Transaccionales e Inventario
+DELETE FROM FACTURAS_ONLINE;
+DELETE FROM FACTURAS_TIENDA;
+DELETE FROM INSCRIPCIONES_TOUR;
+DELETE FROM LOTES_SET_TIENDA;
+DELETE FROM HORARIOS_ATENCION;
+
+-- Nivel 4: Catálogos, Precios y Fechas
+DELETE FROM CATALOGOS_LEGO;
+DELETE FROM HISTORICO_PRECIOS_JUGUETES;
+DELETE FROM FECHAS_TOUR;
+
+-- Nivel 3: Entidades Principales (Personas y Productos)
+DELETE FROM VISITANTES_FANS; -- Depende de Clientes (Representante)
+DELETE FROM CLIENTES;
+DELETE FROM JUGUETES;
+DELETE FROM TIENDAS_LEGO;
+
+-- Nivel 2: Maestros de Clasificación
+DELETE FROM TEMAS;
+DELETE FROM CIUDADES;
+
+-- Nivel 1: Geografía Base
+DELETE FROM ESTADOS;
+DELETE FROM PAISES;
+
+COMMIT;
+
+-- 3. REINICIAR SECUENCIAS (Opcional: Para empezar de 1 otra vez)
+-- (Si te da error porque no existen, ignóralo o comenta estas líneas)
+/*
+DROP SEQUENCE nrofacturaVenOL;
+CREATE SEQUENCE nrofacturaVenOL START WITH 1 INCREMENT BY 1;
+
+DROP SEQUENCE nfacturatour;
+CREATE SEQUENCE nfacturatour START WITH 1 INCREMENT BY 1;
+
+DROP SEQUENCE id_entrada;
+CREATE SEQUENCE id_entrada START WITH 1 INCREMENT BY 1;
+*/
+
+-- 4. REACTIVAR TRIGGERS DE SEGURIDAD
+ALTER TRIGGER trg_no_delete_fact_tienda ENABLE;
+ALTER TRIGGER trg_no_delete_fact_online ENABLE;
+
+-- Verificación final
+SELECT 'Registros borrados exitosamente' AS ESTADO FROM DUAL;
