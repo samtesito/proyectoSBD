@@ -410,6 +410,36 @@ COMMIT;
 INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
 VALUES (408, DATE '2025-12-01', 49.99, NULL);
 
+
+--Otros Insert para el historico precio
+
+-- PRECIOS VIGENTES para TODOS los JUGUETES (f_fin = NULL)
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VALUES 
+-- Batman Series (ya tienen algunos)
+(2011, DATE '2025-12-01', 5.99, NULL),  -- Batman Key Chain
+(2013, DATE '2025-12-01', 4.99, NULL),  -- Batgirl Key Chain  
+(2014, DATE '2025-12-01', 24.99, NULL), -- Batman 8in1 Figure
+
+-- LEGO Art Series
+(3011, DATE '2025-12-01', 89.99, NULL), -- Milky Way Galaxy
+(3013, DATE '2025-12-01', 69.99, NULL), -- Mona Lisa
+(3014, DATE '2025-12-01', 59.99, NULL), -- Tiger Fauna
+
+-- Marvel Series  
+(409, DATE '2025-12-01', 29.99, NULL),  -- Dancing Groot
+(410, DATE '2025-12-01', 19.99, NULL),  -- Miles Morales Mask
+(411, DATE '2025-12-01', 199.99, NULL), -- Daily Bugle
+
+-- BrickHeadz Series
+(413, DATE '2025-12-01', 14.99, NULL),  -- Wednesday y Enid
+(414, DATE '2025-12-01', 9.99, NULL),   -- Dumbo (ya existía)
+(415, DATE '2025-12-01', 12.99, NULL);  -- Red Panda Mei
+
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
+VALUES (3012, DATE '2025-12-01', 79.99, NULL);
+COMMIT;
+
+
 /*
 --INSERTS PROBADOS: CUPO
 INSERT INTO FECHAS_TOUR VALUES('22-12-26',20,1);
