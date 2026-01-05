@@ -451,6 +451,17 @@ INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_pr
 
 COMMIT;
 
+--Más insert para los detalles factura:
+-- 1. DETALLES_FACTURA_TIENDA para cada factura (coinciden con lotes existentes)
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) VALUES 
+(500002, 80002, 2, 'A', 2012, 11, 302),  -- Tienda Israel - Batman Mech
+(500003, 80003, 1, 'M', 2011, 10, 303),  -- Caracas - Batman Key Chain
+(500004, 80004, 3, 'A', 412, 21, 304),   -- Chile - Eeyore
+(500005, 80005, 1, 'A', 409, 12, 305),   -- Israel - Dancing Groot
+(500006, 80006, 2, 'A', 410, 13, 306),   -- Israel - Miles Morales
+(500007, 80007, 1, 'A', 411, 22, 307);   -- Chile - Daily Bugle
+
+COMMIT;
 
 /*
 --INSERTS PROBADOS: CUPO
