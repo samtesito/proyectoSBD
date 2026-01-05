@@ -452,16 +452,43 @@ INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_pr
 COMMIT;
 
 --Más insert para los detalles factura:
--- 1. DETALLES_FACTURA_TIENDA para cada factura (coinciden con lotes existentes)
-INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) VALUES 
-(500002, 80002, 2, 'A', 2012, 11, 302),  -- Tienda Israel - Batman Mech
-(500003, 80003, 1, 'M', 2011, 10, 303),  -- Caracas - Batman Key Chain
-(500004, 80004, 3, 'A', 412, 21, 304),   -- Chile - Eeyore
-(500005, 80005, 1, 'A', 409, 12, 305),   -- Israel - Dancing Groot
-(500006, 80006, 2, 'A', 410, 13, 306),   -- Israel - Miles Morales
-(500007, 80007, 1, 'A', 411, 22, 307);   -- Chile - Daily Bugle
+-- CATÁLOGOS para los países/tiendas de las facturas
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES 
+-- Israel (972) para tiendas 11,12,13
+(972, 2012, 40),  -- Batman Mech
+(972, 409,  30),  -- Dancing Groot  
+(972, 410,  25),  -- Miles Morales
+
+-- Chile (56) para tiendas 21,22
+(56, 412,  50),   -- Eeyore
+(56, 411,  15);   -- Daily Bugle
+
+-- Venezuela (58) - Batman Key Chain (ya tiene 408)
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES (58, 2011, 100);
 
 COMMIT;
+
+
+-- PASO 1: Crear LOTES faltantes (ya están en tu script final, pero verifica)
+INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod) VALUES 
+(2012, 11, 302, DATE '2025-11-15', 25),
+(2011, 10, 303, DATE '2025-11-20', 50),
+(412, 21, 304, DATE '2025-11-25', 30),
+(409, 12, 305, DATE '2025-11-28', 15),
+(410, 13, 306, DATE '2025-11-30', 20),
+(411, 22, 307, DATE '2025-12-01', 10);
+
+COMMIT;
+
+-- PASO 2: AHORA sí los DETALLES_FACTURA_TIENDA
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) VALUES 
+(500002, 80002, 2, 'A', 2012, 11, 302),
+(500003, 80003, 1, 'M', 2011, 10, 303),
+(500004, 80004, 3, 'A', 412, 21, 304),
+(500005, 80005, 1, 'A', 409, 12, 305),
+(500006, 80006, 2, 'A', 410, 13, 306),
+(500007, 80007, 1, 'A', 411, 22, 307);
+
 
 /*
 --INSERTS PROBADOS: CUPO
