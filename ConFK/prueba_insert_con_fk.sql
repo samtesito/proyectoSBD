@@ -440,6 +440,18 @@ VALUES (3012, DATE '2025-12-01', 79.99, NULL);
 COMMIT;
 
 
+-- LOTES para las facturas existentes (500002-500007)
+INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod) VALUES 
+(2012, 11, 302, DATE '2025-11-15', 25),  -- Tienda 11 (Israel) - Batman Mech
+(2011, 10, 303, DATE '2025-11-20', 50),  -- Tienda 10 (Caracas) - Batman Key Chain  
+(412, 21, 304, DATE '2025-11-25', 30),   -- Tienda 21 (Chile) - Eeyore
+(409, 12, 305, DATE '2025-11-28', 15),   -- Tienda 12 (Israel) - Dancing Groot
+(410, 13, 306, DATE '2025-11-30', 20),   -- Tienda 13 (Israel) - Miles Morales
+(411, 22, 307, DATE '2025-12-01', 10);   -- Tienda 22 (Chile) - Daily Bugle
+
+COMMIT;
+
+
 /*
 --INSERTS PROBADOS: CUPO
 INSERT INTO FECHAS_TOUR VALUES('22-12-26',20,1);
