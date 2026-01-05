@@ -58,3 +58,53 @@ HORARIOS_ATENCION h WHERE t.id_pais = p.id AND t.id = h.id_tienda;
 CREATE OR REPLACE VIEW V_TIENDAS (id_tienda, nombre_tienda, nombre_pais, direccion) 
 AS SELECT t.id, t.nombre, p.nombre, t.direccion FROM TIENDAS_LEGO t, PAISES p 
 WHERE t.id_pais = p.id;
+
+--9) Vista de la factura para los reportes
+CREATE OR REPLACE VIEW V_FACTURA_COMPLETA AS
+SELECT 
+    f.nro_fact,
+    f.f_emision,
+    c.prim_nom || ' ' || c.prim_ape AS cliente_nombre,
+    p.nombre AS pais,
+    t.nombre AS tienda,
+    d.cod_juguete,
+    j.nombre AS juguete,
+    j.rgo_edad,
+    DECODE(d.tipo_cli, 'M', 'MENOR', 'A', 'ADULTO') AS tipo_cliente,
+    d.cant_prod,
+    d.cant_prod * h.precio AS subtotal_linea,
+    f.total AS total_factura
+FROM FACTURAS_TIENDA f, CLIENTES c, PAISES p, TIENDAS_LEGO t, 
+     DETALLES_FACTURA_TIENDA d, JUGUETES j, HISTORICO_PRECIOS_JUGUETES h
+WHERE f.id_cliente = c.id_lego
+  AND c.id_pais_resi = p.id
+  AND f.id_tienda = t.id
+  AND f.nro_fact = d.nro_fact
+  AND d.cod_juguete = j.codigo
+  AND j.codigo = h.cod_juguete 
+  AND f.f_emision BETWEEN h.f_inicio AND NVL(h.f_fin, f.f_emision + 1);
+
+--10) Vista de la entrada para los reportes
+CREATE OR REPLACE VIEW V_ENTRADA_TOUR AS
+SELECT 
+    e.f_inicio,
+    e.nro_fact,
+    e.nro AS nro_entrada,
+    DECODE(e.tipo, 'M', 'MENOR', 'A', 'ADULTO') AS tipo_entrada,
+    ft.costo,
+    i.estado,
+    i.total,
+    NVL(c.prim_nom || ' ' || c.prim_ape, v.prim_nom || ' ' || v.prim_ape) AS nombre_comprador,
+    DECODE(di.id_cliente, NULL, 'VISITANTE', 'CLIENTE') AS tipo_comprador,
+    p.nombre AS pais_residencia
+FROM ENTRADAS e, INSCRIPCIONES_TOUR i, FECHAS_TOUR ft, 
+     DETALLES_INSCRITOS di, CLIENTES c, VISITANTES_FANS v, PAISES p
+WHERE e.f_inicio = i.f_inicio 
+  AND e.nro_fact = i.nro_fact
+  AND e.f_inicio = ft.f_inicio
+  AND e.f_inicio = di.fecha_inicio (+) 
+  AND e.nro_fact = di.nro_fact (+)
+  AND di.id_cliente = c.id_lego (+)
+  AND di.id_visit = v.id_lego (+)
+  AND NVL(c.id_pais_resi, v.id_pais) = p.id (+);
+
