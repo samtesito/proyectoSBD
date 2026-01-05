@@ -62,17 +62,13 @@ WHERE t.id_pais = p.id;
 --9) Vista de la factura para los reportes
 CREATE OR REPLACE VIEW V_FACTURA_COMPLETA AS
 SELECT 
-    f.nro_fact,
-    f.f_emision,
+    f.nro_fact, f.f_emision,
     c.prim_nom || ' ' || c.prim_ape AS cliente_nombre,
-    p.nombre AS pais,
-    t.nombre AS tienda,
-    d.cod_juguete,
-    j.nombre AS juguete,
-    j.rgo_edad,
+    p.nombre AS pais, t.nombre AS tienda,
+    d.cod_juguete, j.nombre AS juguete, j.rgo_edad,
     DECODE(d.tipo_cli, 'M', 'MENOR', 'A', 'ADULTO') AS tipo_cliente,
     d.cant_prod,
-    d.cant_prod * h.precio AS subtotal_linea,
+    d.cant_prod * COALESCE(h.precio, 0) AS subtotal_linea,
     f.total AS total_factura
 FROM FACTURAS_TIENDA f, CLIENTES c, PAISES p, TIENDAS_LEGO t, 
      DETALLES_FACTURA_TIENDA d, JUGUETES j, HISTORICO_PRECIOS_JUGUETES h
@@ -82,7 +78,8 @@ WHERE f.id_cliente = c.id_lego
   AND f.nro_fact = d.nro_fact
   AND d.cod_juguete = j.codigo
   AND j.codigo = h.cod_juguete 
-  AND f.f_emision BETWEEN h.f_inicio AND NVL(h.f_fin, f.f_emision + 1);
+  AND h.f_fin IS NULL
+  AND f.f_emision >= h.f_inicio; 
 
 --10) Vista de la entrada para los reportes
 CREATE OR REPLACE VIEW V_ENTRADA_TOUR AS
