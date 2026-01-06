@@ -69,7 +69,9 @@ SELECT
     DECODE(d.tipo_cli, 'M', 'MENOR', 'A', 'ADULTO') AS tipo_cliente,
     d.cant_prod,
     d.cant_prod * COALESCE(h.precio, 0) AS subtotal_linea,
-    f.total AS total_factura
+    f.total AS total_factura,
+    t.direccion AS direccion_tienda,
+    t.id AS id_tienda
 FROM FACTURAS_TIENDA f, CLIENTES c, PAISES pt, TIENDAS_LEGO t,
      DETALLES_FACTURA_TIENDA d, JUGUETES j, HISTORICO_PRECIOS_JUGUETES h
 WHERE f.id_cliente = c.id_lego
