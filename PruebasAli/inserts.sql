@@ -424,7 +424,18 @@ INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) VA
 (3012, TO_DATE('2025-04-10','YYYY-MM-DD'), 79.99, TO_DATE('2025-10-15','YYYY-MM-DD')),
 (412, TO_DATE('2025-05-01','YYYY-MM-DD'), 9.99, NULL),                                 
 (414, TO_DATE('2025-01-15','YYYY-MM-DD'), 9.99, TO_DATE('2025-07-01','YYYY-MM-DD')),   
-(2011, TO_DATE('2025-06-01','YYYY-MM-DD'), 4.99, NULL);                               
+(2011, TO_DATE('2025-06-01','YYYY-MM-DD'), 4.99, NULL);       
+
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
+VALUES (2012, TO_DATE('2024-01-01','YYYY-MM-DD'), 19.99, TO_DATE('2025-02-28','YYYY-MM-DD'));
+
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
+VALUES (3012, TO_DATE('2024-01-01','YYYY-MM-DD'), 79.99, TO_DATE('2025-04-09','YYYY-MM-DD'));
+
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
+VALUES (408, TO_DATE('2024-01-01','YYYY-MM-DD'), 45.99, TO_DATE('2024-12-31','YYYY-MM-DD'));
+
+COMMIT;
 
 COMMIT;
 
