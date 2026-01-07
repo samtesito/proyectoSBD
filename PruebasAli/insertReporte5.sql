@@ -198,3 +198,44 @@ INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli,
 VALUES (90002, 1, 80, 'A', 409, 10, 100);
 
 COMMIT;
+
+
+--------------------------------------------------------
+-- CORRECCIÓN: PRECIO IRON SPIDER (SEMESTRE 2 - 2025)
+--------------------------------------------------------
+-- Insertamos el precio para la segunda mitad del año
+-- Así cubrirá la venta de Septiembre en México
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
+VALUES (408, TO_DATE('2025-07-01','YYYY-MM-DD'), 45.99, TO_DATE('2025-12-31','YYYY-MM-DD'));
+
+COMMIT;
+
+
+
+---------------------------------------------------------------------
+-- DATOS FUTUROS: MÉXICO 2026
+---------------------------------------------------------------------
+
+-- 1. ASEGURAR PRECIOS PARA 2026
+-- Necesitamos que el producto tenga un precio válido en esa fecha.
+-- El Daily Bugle (411) le pusimos precio infinito (NULL) en el script anterior, así que sirve.
+-- Pero vamos a asegurarnos con el Iron Spider (408) también.
+
+MERGE INTO HISTORICO_PRECIOS_JUGUETES h 
+USING (SELECT 408 c, TO_DATE('01/01/2026','DD/MM/YYYY') f, 42.00 p, NULL ff FROM DUAL) s
+ON (h.cod_juguete = s.c AND h.f_inicio = s.f) 
+WHEN NOT MATCHED THEN INSERT (cod_juguete, f_inicio, precio, f_fin) VALUES (s.c, s.f, s.p, s.ff);
+
+COMMIT;
+
+-- 2. VENTA EN MÉXICO (AÑO 2026)
+-- Usamos el Cliente Mexicano (1052) y la Tienda Santa Fe (5201)
+
+INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) 
+VALUES (99026, 1052, 5201, DATE '2026-03-20', 0);
+
+-- Venta masiva de Iron Spider en 2026
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) 
+VALUES (99026, 1, 150, 'A', 408, 5201, 10); 
+
+COMMIT;
