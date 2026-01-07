@@ -66,3 +66,135 @@ INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli,
 VALUES (600003, 1, 15, 'A', 2012, 21, 100);
 
 COMMIT;
+
+
+
+
+
+
+
+---------------------------------------------------------------------
+-- PAQUETE DE EXPANSIÓN PARA REPORTE 5 (Top 3 Anual)
+-- Incluye: Precios Históricos, Nuevas Tiendas y Ventas 2024-2025
+---------------------------------------------------------------------
+
+-- =================================================================
+-- 1. PRECIOS HISTÓRICOS (CRÍTICO: SIN ESTO NO HAY DINERO EN 2024)
+-- =================================================================
+-- Definimos precios para 2024 y 2025 para que el cálculo monetario funcione
+
+-- Batman Mech Armor (2012): Precio viejo 2024 -> Precio nuevo 2025
+MERGE INTO HISTORICO_PRECIOS_JUGUETES h USING (SELECT 2012 c, TO_DATE('01/01/2024','DD/MM/YYYY') f, 18.00 p, TO_DATE('31/12/2024','DD/MM/YYYY') ff FROM DUAL) s
+ON (h.cod_juguete = s.c AND h.f_inicio = s.f) WHEN NOT MATCHED THEN INSERT (cod_juguete, f_inicio, precio, f_fin) VALUES (s.c, s.f, s.p, s.ff);
+
+-- Daily Bugle (411): Juguete caro ($300)
+MERGE INTO HISTORICO_PRECIOS_JUGUETES h USING (SELECT 411 c, TO_DATE('01/01/2024','DD/MM/YYYY') f, 299.99 p, NULL ff FROM DUAL) s
+ON (h.cod_juguete = s.c AND h.f_inicio = s.f) WHEN NOT MATCHED THEN INSERT (cod_juguete, f_inicio, precio, f_fin) VALUES (s.c, s.f, s.p, s.ff);
+
+-- Mona Lisa (3013): Arte ($100)
+MERGE INTO HISTORICO_PRECIOS_JUGUETES h USING (SELECT 3013 c, TO_DATE('01/01/2024','DD/MM/YYYY') f, 99.99 p, NULL ff FROM DUAL) s
+ON (h.cod_juguete = s.c AND h.f_inicio = s.f) WHEN NOT MATCHED THEN INSERT (cod_juguete, f_inicio, precio, f_fin) VALUES (s.c, s.f, s.p, s.ff);
+
+-- Iron Spider (408): Precio 2024
+MERGE INTO HISTORICO_PRECIOS_JUGUETES h USING (SELECT 408 c, TO_DATE('01/01/2024','DD/MM/YYYY') f, 40.00 p, TO_DATE('31/12/2024','DD/MM/YYYY') ff FROM DUAL) s
+ON (h.cod_juguete = s.c AND h.f_inicio = s.f) WHEN NOT MATCHED THEN INSERT (cod_juguete, f_inicio, precio, f_fin) VALUES (s.c, s.f, s.p, s.ff);
+
+COMMIT;
+
+-- =================================================================
+-- 2. INFRAESTRUCTURA (MÉXICO Y ESPAÑA)
+-- =================================================================
+
+-- 2.1 Tienda en MÉXICO (ID 5201)
+MERGE INTO TIENDAS_LEGO t USING (SELECT 5201 id, 'LEGO Santa Fe' n, 'CDMX' d, 52 ip, 1 ie, 101 ic FROM DUAL) s
+ON (t.id = s.id) WHEN NOT MATCHED THEN INSERT (id, nombre, direccion, id_pais, id_estado, id_ciudad) VALUES (s.id, s.n, s.d, s.ip, s.ie, s.ic);
+
+-- 2.2 Tienda en ESPAÑA (ID 3401) - Si no tenías la 34, usamos esta nueva
+MERGE INTO TIENDAS_LEGO t USING (SELECT 3401 id, 'LEGO Gran Vía' n, 'Madrid' d, 34 ip, 1 ie, 101 ic FROM DUAL) s
+ON (t.id = s.id) WHEN NOT MATCHED THEN INSERT (id, nombre, direccion, id_pais, id_estado, id_ciudad) VALUES (s.id, s.n, s.d, s.ip, s.ie, s.ic);
+
+-- 2.3 Clientes Locales
+-- Cliente Mexicano
+MERGE INTO CLIENTES c USING (SELECT 1052 id, 'Luis' n, 'Miguel' a, 'X' sa, DATE '1970-04-19' fn, 'MX888' d, 52 ip, 'PAS-MX-01' p, DATE '2030-01-01' vp FROM DUAL) s
+ON (c.id_lego = s.id) WHEN NOT MATCHED THEN INSERT (id_lego, prim_nom, prim_ape, seg_ape, f_nacim, dni, id_pais_resi, pasaporte, f_venc_pasap) VALUES (s.id, s.n, s.a, s.sa, s.fn, s.d, s.ip, s.p, s.vp);
+
+-- Cliente Español
+MERGE INTO CLIENTES c USING (SELECT 1034 id, 'Ibai' n, 'Llanos' a, 'X' sa, DATE '1995-03-26' fn, 'ES777' d, 34 ip, NULL p, NULL vp FROM DUAL) s
+ON (c.id_lego = s.id) WHEN NOT MATCHED THEN INSERT (id_lego, prim_nom, prim_ape, seg_ape, f_nacim, dni, id_pais_resi, pasaporte, f_venc_pasap) VALUES (s.id, s.n, s.a, s.sa, s.fn, s.d, s.ip, s.p, s.vp);
+
+COMMIT;
+
+-- =================================================================
+-- 3. INVENTARIO (CATÁLOGOS Y LOTES)
+-- =================================================================
+
+-- Autorizamos juguetes en Mexico (52) y España (34)
+DECLARE
+    TYPE num_list IS TABLE OF NUMBER;
+    v_paises num_list := num_list(52, 34); 
+    v_jugues num_list := num_list(411, 3013, 2012, 408, 409); -- Daily Bugle, Mona Lisa, Batman, Spider, Groot
+    v_cnt NUMBER;
+BEGIN
+    FOR i IN 1..v_paises.COUNT LOOP
+        FOR j IN 1..v_jugues.COUNT LOOP
+            SELECT COUNT(*) INTO v_cnt FROM CATALOGOS_LEGO WHERE id_pais = v_paises(i) AND cod_juguete = v_jugues(j);
+            IF v_cnt = 0 THEN INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES (v_paises(i), v_jugues(j), 50); END IF;
+        END LOOP;
+    END LOOP;
+END;
+/
+
+-- Creamos Lotes (Stock) en Tienda Mexico (5201) y España (3401)
+DECLARE
+    TYPE num_list IS TABLE OF NUMBER;
+    v_tiendas num_list := num_list(5201, 3401); 
+    v_jugues num_list := num_list(411, 3013, 2012, 408, 409);
+    v_cnt NUMBER;
+BEGIN
+    FOR i IN 1..v_tiendas.COUNT LOOP
+        FOR j IN 1..v_jugues.COUNT LOOP
+            SELECT COUNT(*) INTO v_cnt FROM LOTES_SET_TIENDA WHERE id_tienda = v_tiendas(i) AND cod_juguete = v_jugues(j) AND nro_lote = 10;
+            IF v_cnt = 0 THEN 
+                INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod) 
+                VALUES (v_jugues(j), v_tiendas(i), 10, DATE '2023-01-01', 200); -- Lote 10 con 200 unidades
+            END IF;
+        END LOOP;
+    END LOOP;
+END;
+/
+COMMIT;
+
+-- =================================================================
+-- 4. VENTAS (AQUÍ ESTÁ LA MAGIA DEL REPORTE)
+-- =================================================================
+
+-- --- AÑO 2024 (Competencia AMÉRICA) ---
+-- México vende el Daily Bugle (Juguete Caro -> $300 c/u)
+-- Esto lo pondrá Top 1 en Dinero, aunque venda pocos.
+INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) VALUES (80001, 1052, 5201, DATE '2024-05-05', 0);
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) 
+VALUES (80001, 1, 10, 'A', 411, 5201, 10); -- 10 Bugles * 300 = $3000
+
+-- México también vende Batman barato (Volumen alto, poco dinero)
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) 
+VALUES (80001, 2, 50, 'A', 2012, 5201, 10); -- 50 Batman * 18 = $900
+
+-- --- AÑO 2024 (Competencia EUROPA) ---
+-- España vende la Mona Lisa (Arte)
+INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) VALUES (80002, 1034, 3401, DATE '2024-07-07', 0);
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) 
+VALUES (80002, 1, 40, 'A', 3013, 3401, 10); -- 40 Cuadros * 100 = $4000 (Ganador Europa)
+
+
+-- --- AÑO 2025 (Cambio de Líderes) ---
+-- En 2025, México vende Iron Spider masivamente
+INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) VALUES (90001, 1052, 5201, DATE '2025-09-15', 0);
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) 
+VALUES (90001, 1, 100, 'A', 408, 5201, 10); 
+
+-- En 2025, Venezuela (Tienda 10) vende Groot Bailarín (Juguete 409)
+INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) VALUES (90002, 1001, 10, DATE '2025-06-20', 0);
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote) 
+VALUES (90002, 1, 80, 'A', 409, 10, 100);
+
+COMMIT;
