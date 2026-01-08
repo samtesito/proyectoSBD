@@ -30,6 +30,66 @@ GROUP BY
 
 
 
+
+
+  CREATE OR REPLACE FORCE NONEDITIONABLE VIEW "ALI123"."V_REPORTE_5" ("CONTINENTE", "PAIS", "ANIO", "NOMBRE_JUGUETE", "TOTAL_UNIDADES", "TOTAL_MONETARIO", "MONEDA", "NUMERO_RANKING", "ETIQUETA_RANKING") AS 
+  SELECT 
+    p.continente,
+    p.nombre AS pais,
+    EXTRACT(YEAR FROM f.f_emision) AS anio,
+    j.nombre AS nombre_juguete,
+    
+    -- 1. Métricas Numéricas (Estas SÍ se suman bien)
+    SUM(d.cant_prod) AS total_unidades,
+    SUM(d.cant_prod * h.precio) AS total_monetario,
+    
+    -- 2. Columna SOLO para el Símbolo (Texto)
+    CASE 
+        WHEN p.ue = 1 THEN '€' 
+        ELSE '$' 
+    END AS moneda,
+    
+    -- 3. Ranking Inteligente (Para el Top 3 con empates)
+    DENSE_RANK() OVER (
+        PARTITION BY p.nombre, EXTRACT(YEAR FROM f.f_emision) 
+        ORDER BY SUM(d.cant_prod * h.precio) DESC
+    ) AS numero_ranking,
+    
+    -- 4. Etiqueta visual
+    'Top ' || DENSE_RANK() OVER (
+        PARTITION BY p.nombre, EXTRACT(YEAR FROM f.f_emision) 
+        ORDER BY SUM(d.cant_prod * h.precio) DESC
+    ) AS etiqueta_ranking
+
+FROM DETALLES_FACTURA_TIENDA d
+JOIN FACTURAS_TIENDA f ON d.nro_fact = f.nro_fact
+JOIN TIENDAS_LEGO t ON f.id_tienda = t.id
+JOIN PAISES p ON t.id_pais = p.id
+JOIN JUGUETES j ON d.cod_juguete = j.codigo
+JOIN HISTORICO_PRECIOS_JUGUETES h ON d.cod_juguete = h.cod_juguete
+WHERE f.f_emision >= h.f_inicio 
+  AND (f.f_emision <= h.f_fin OR h.f_fin IS NULL)
+GROUP BY 
+    p.continente, 
+    p.nombre, 
+    p.ue,
+    EXTRACT(YEAR FROM f.f_emision), 
+    j.nombre;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 CREATE OR REPLACE VIEW V_REPORTE_6_ONLINE_SEMESTRAL AS
 SELECT 
     EXTRACT(YEAR FROM fo.f_emision) AS ANIO,
@@ -54,3 +114,4 @@ GROUP BY
     p.nombre,
     p.continente;
     t.nombre;
+
