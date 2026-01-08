@@ -239,3 +239,111 @@ INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli,
 VALUES (99026, 1, 150, 'A', 408, 5201, 10); 
 
 COMMIT;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------
+-- 1. CREAR EL JUGUETE (Corregido el valor booleano)
+-------------------------------------------------------------------------
+-- Cambié 'false' por 0. Si tu columna es de texto, usa 'FALSE' o 'F'.
+INSERT INTO JUGUETES (codigo, nombre, descripcion, id_tema, rgo_edad, rgo_precio, tipo_lego, "set", instruc, piezas) 
+SELECT 7654, 'Pico Minecraft', 'Herramienta de diamante pixelada', 101, '12+', 'D', 'L', 0, 'Manual incluido', 6020 
+FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM JUGUETES WHERE codigo = 7654);
+
+-------------------------------------------------------------------------
+-- 2. ASEGURAR TIENDA EN MÉXICO (ID 99)
+-------------------------------------------------------------------------
+DECLARE
+  v_count NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_count FROM TIENDAS_LEGO WHERE id = 99;
+  IF v_count = 0 THEN
+    INSERT INTO TIENDAS_LEGO (id, nombre, direccion, id_pais, id_estado, id_ciudad)
+    VALUES (99, 'LEGO Store Reforma', 'Paseo de la Reforma', 52, 1, 101);
+  END IF;
+END;
+/
+
+-------------------------------------------------------------------------
+-- 3. AUTORIZAR EL JUGUETE EN EL CATÁLOGO
+-------------------------------------------------------------------------
+INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) 
+SELECT 52, 7654, 50 FROM DUAL 
+WHERE NOT EXISTS (SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais=52 AND cod_juguete=7654);
+
+-------------------------------------------------------------------------
+-- 4. INSERTAR PRECIO HISTÓRICO (6298.88)
+-------------------------------------------------------------------------
+INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin) 
+SELECT 7654, TO_DATE('01/01/2024','DD/MM/YYYY'), 6298.88, NULL 
+FROM DUAL 
+WHERE NOT EXISTS (SELECT 1 FROM HISTORICO_PRECIOS_JUGUETES WHERE cod_juguete=7654);
+
+-------------------------------------------------------------------------
+-- 5. CREAR INVENTARIO (LOTE 701)
+-------------------------------------------------------------------------
+INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod) 
+SELECT 7654, 99, 701, SYSDATE-150, 20 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM LOTES_SET_TIENDA WHERE cod_juguete=7654 AND id_tienda=99 AND nro_lote=701);
+
+-------------------------------------------------------------------------
+-- 6. REGISTRAR LA VENTA (FACTURA 9901)
+-------------------------------------------------------------------------
+-- Usamos un bloque anónimo para validar que la factura no exista y evitar errores únicos
+DECLARE
+  v_chk NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO v_chk FROM FACTURAS_TIENDA WHERE nro_fact = 9901;
+  
+  IF v_chk = 0 THEN
+      INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total) 
+      VALUES (
+        9901, 
+        1004,   -- Cliente Mexicano
+        99,     -- Tienda México
+        TO_DATE('20/06/2024','DD/MM/YYYY'), 
+        6298.88
+      );
+  END IF;
+END;
+/
+
+-------------------------------------------------------------------------
+-- 7. INSERTAR DETALLE FACTURA (Donde te daba error)
+-------------------------------------------------------------------------
+INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote)
+SELECT 9901, 1, 1, 'A', 7654, 99, 701 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM DETALLES_FACTURA_TIENDA WHERE nro_fact=9901 AND id_det_fact=1);
+
+COMMIT;
