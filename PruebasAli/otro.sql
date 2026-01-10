@@ -683,3 +683,83 @@ END;
 /
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE PROCEDURE SP_ACTUALIZAR_PRECIO (
+    p_cod_juguete  IN NUMBER,
+    p_nuevo_precio IN NUMBER,
+    p_fecha_inicio IN DATE
+) IS
+    v_nombre_juguete VARCHAR2(100);
+    v_precio_anterior NUMBER;
+    v_existe         NUMBER;
+    
+    ex_no_existe     EXCEPTION;
+    ex_fecha_invalida EXCEPTION;
+BEGIN
+    -- 1. Validar que el juguete existe
+    BEGIN
+        SELECT nombre INTO v_nombre_juguete FROM JUGUETES WHERE codigo = p_cod_juguete;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN RAISE ex_no_existe;
+    END;
+
+    -- 2. "Cerrar" el precio anterior (Actualizar su fecha fin)
+    -- Solo cerramos si la fecha nueva es posterior al inicio del precio actual
+    UPDATE HISTORICO_PRECIOS_JUGUETES
+    SET f_fin = p_fecha_inicio - 1
+    WHERE cod_juguete = p_cod_juguete 
+    AND f_fin IS NULL;
+
+    -- (Opcional) Guardamos el precio viejo para el reporte, si existía
+    BEGIN
+        SELECT precio INTO v_precio_anterior 
+        FROM HISTORICO_PRECIOS_JUGUETES 
+        WHERE cod_juguete = p_cod_juguete AND f_fin = p_fecha_inicio - 1;
+    EXCEPTION 
+        WHEN NO_DATA_FOUND THEN v_precio_anterior := 0; 
+    END;
+
+    -- 3. Insertar el nuevo precio
+    INSERT INTO HISTORICO_PRECIOS_JUGUETES (cod_juguete, f_inicio, precio, f_fin)
+    VALUES (p_cod_juguete, p_fecha_inicio, p_nuevo_precio, NULL);
+
+    COMMIT;
+
+    -- 4. Mensaje de Confirmación
+    DBMS_OUTPUT.PUT_LINE('==============================================');
+    DBMS_OUTPUT.PUT_LINE(' PRECIO ACTUALIZADO CORRECTAMENTE');
+    DBMS_OUTPUT.PUT_LINE('==============================================');
+    DBMS_OUTPUT.PUT_LINE('Juguete: ' || v_nombre_juguete || ' (ID ' || p_cod_juguete || ')');
+    DBMS_OUTPUT.PUT_LINE('Vigencia desde: ' || p_fecha_inicio);
+    DBMS_OUTPUT.PUT_LINE('Precio Anterior: $' || v_precio_anterior);
+    DBMS_OUTPUT.PUT_LINE('Precio Nuevo:    $' || p_nuevo_precio);
+    DBMS_OUTPUT.PUT_LINE('==============================================');
+
+EXCEPTION
+    WHEN ex_no_existe THEN
+        RAISE_APPLICATION_ERROR(-20001, 'El ID del juguete no existe.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20002, 'Error al actualizar precio: ' || SQLERRM);
+END;
+/
+
+
