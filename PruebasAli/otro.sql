@@ -580,3 +580,111 @@ END;
 /
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE PROCEDURE SP_ALTA_CATALOGO_Y_STOCK (
+    p_id_pais     IN NUMBER,
+    p_id_tienda   IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_cantidad    IN NUMBER,
+    p_limite_cat  IN NUMBER DEFAULT 50 -- Limite de compra por defecto
+) IS
+    v_existe_cat    NUMBER;
+    v_check_pais    NUMBER;
+    v_nombre_juguete JUGUETES.nombre%TYPE;
+    v_nombre_tienda TIENDAS_LEGO.nombre%TYPE;
+    v_nro_lote      NUMBER;
+    
+    ex_tienda_error EXCEPTION;
+    ex_juguete_err  EXCEPTION;
+
+BEGIN
+    -- 1. VALIDAR QUE LA TIENDA PERTENECE AL PAÍS
+    SELECT COUNT(*) INTO v_check_pais 
+    FROM TIENDAS_LEGO 
+    WHERE id = p_id_tienda AND id_pais = p_id_pais;
+    
+    IF v_check_pais = 0 THEN 
+        RAISE ex_tienda_error; 
+    END IF;
+
+    -- Obtener nombres para el reporte final
+    SELECT nombre INTO v_nombre_tienda FROM TIENDAS_LEGO WHERE id = p_id_tienda;
+    BEGIN
+        SELECT nombre INTO v_nombre_juguete FROM JUGUETES WHERE codigo = p_cod_juguete;
+    EXCEPTION WHEN NO_DATA_FOUND THEN RAISE ex_juguete_err;
+    END;
+
+    -- 2. GESTIÓN DEL CATÁLOGO (SI NO EXISTE, LO CREA)
+    SELECT COUNT(*) INTO v_existe_cat
+    FROM CATALOGOS_LEGO
+    WHERE id_pais = p_id_pais AND cod_juguete = p_cod_juguete;
+
+    IF v_existe_cat = 0 THEN
+        INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite)
+        VALUES (p_id_pais, p_cod_juguete, p_limite_cat);
+        
+        DBMS_OUTPUT.PUT_LINE('>> AVISO: El juguete no estaba en el catálogo de este país. Se ha agregado automáticamente.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('>> OK: El juguete ya existía en el catálogo.');
+    END IF;
+
+    -- 3. GESTIÓN DEL LOTE (STOCK)
+    -- Calculamos el siguiente número de lote para esta tienda y juguete (para no duplicar PK)
+    SELECT NVL(MAX(nro_lote), 0) + 1 
+    INTO v_nro_lote
+    FROM LOTES_SET_TIENDA
+    WHERE id_tienda = p_id_tienda AND cod_juguete = p_cod_juguete;
+
+    -- Insertamos el nuevo inventario
+    INSERT INTO LOTES_SET_TIENDA (cod_juguete, id_tienda, nro_lote, f_adqui, cant_prod)
+    VALUES (p_cod_juguete, p_id_tienda, v_nro_lote, SYSDATE, p_cantidad);
+
+    COMMIT;
+
+    -- 4. REPORTE FINAL
+    DBMS_OUTPUT.PUT_LINE('--------------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('¡ABASTECIMIENTO EXITOSO!');
+    DBMS_OUTPUT.PUT_LINE('Tienda:   ' || v_nombre_tienda || ' (ID ' || p_id_tienda || ')');
+    DBMS_OUTPUT.PUT_LINE('Producto: ' || v_nombre_juguete || ' (ID ' || p_cod_juguete || ')');
+    DBMS_OUTPUT.PUT_LINE('Acción:   Se ingresó el LOTE Nro ' || v_nro_lote);
+    DBMS_OUTPUT.PUT_LINE('Cantidad: ' || p_cantidad || ' unidades disponibles.');
+    DBMS_OUTPUT.PUT_LINE('--------------------------------------------------');
+
+EXCEPTION
+    WHEN ex_tienda_error THEN
+        RAISE_APPLICATION_ERROR(-20010, 'Error: La tienda ID ' || p_id_tienda || ' no pertenece al país ID ' || p_id_pais);
+    WHEN ex_juguete_err THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Error: El ID de juguete no existe en la base de datos maestra.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20012, 'Error inesperado: ' || SQLERRM);
+END;
+/
+
+
