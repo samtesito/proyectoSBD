@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
--- Ejecuta esto para ver el MENÚ DE PAÍSES
+-- Ejecuta esto primero para ver el MENÚ DE PAÍSES DISPONIBLES
 SELECT 
     p.id AS ID_PAIS, 
     p.nombre AS PAIS, 
@@ -13,7 +13,9 @@ FROM PAISES p
 WHERE EXISTS (SELECT 1 FROM TIENDAS_LEGO t WHERE t.id_pais = p.id)
 ORDER BY p.nombre;
 
--- Ejecuta esto para ver el MENÚ DE PAÍSESSET SERVEROUTPUT ON;
+
+-- AHORA EJECUTA ESTE BLOQUE COMPLETO PARA INICIAR LA COMPRA
+SET SERVEROUTPUT ON;
 SET VERIFY OFF;
 
 -- 1. VENTANA EMERGENTE: Te pedirá el Año y el País
@@ -21,46 +23,82 @@ DEFINE anio_elegido = &Escribe_el_Anio_Venta;
 DEFINE pais_elegido = &Escribe_ID_Pais_Compra;
 
 PROMPT ==================================================;
-PROMPT       CATALOGO DISPONIBLE EN PAIS ID &pais_elegido;
+PROMPT        TIENDAS DISPONIBLES EN PAIS ID &pais_elegido;
 PROMPT ==================================================;
 
--- Esto imprimirá en la consola los juguetes disponibles en ese país
+-- Esto imprimirá las tiendas del país seleccionado
 DECLARE
-    CURSOR c_juguetes IS
-        SELECT j.codigo, j.nombre, l.cant_prod, l.nro_lote
-        FROM CATALOGOS_LEGO c
-        JOIN JUGUETES j ON c.cod_juguete = j.codigo
-        JOIN TIENDAS_LEGO t ON c.id_pais = t.id_pais
-        JOIN LOTES_SET_TIENDA l ON l.cod_juguete = j.codigo AND l.id_tienda = t.id
-        WHERE c.id_pais = &pais_elegido
-        AND l.cant_prod > 0
-        AND ROWNUM <= 10; -- Muestra max 10 para no saturar
+    CURSOR c_tiendas IS
+        SELECT id, nombre, direccion 
+        FROM TIENDAS_LEGO 
+        WHERE id_pais = &pais_elegido;
 BEGIN
-    FOR r IN c_juguetes LOOP
-        DBMS_OUTPUT.PUT_LINE('ID: ' || r.codigo || ' | ' || r.nombre || ' | Stock: ' || r.cant_prod);
+    FOR t IN c_tiendas LOOP
+        DBMS_OUTPUT.PUT_LINE('ID TIENDA: ' || t.id || ' | ' || t.nombre || ' (' || t.direccion || ')');
     END LOOP;
 END;
 /
 
 PROMPT ;
-PROMPT Mira la lista de arriba y elige tu juguete...;
+PROMPT Elija una tienda de la lista de arriba...;
 PROMPT ;
 
--- 2. VENTANA EMERGENTE: Te pedirá Juguete y Cantidad
--- (SQL Developer te pedirá esto inmediatamente después de lo anterior)
+-- 2. VENTANA EMERGENTE: Te pedirá la Tienda
+DEFINE tienda_elegida = &Escribe_ID_Tienda_Compra;
+
+PROMPT ==================================================;
+PROMPT    STOCK EN LA TIENDA SELECCIONADA (ID &tienda_elegida);
+PROMPT ==================================================;
+
+-- Esto imprimirá los juguetes QUE TIENEN STOCK en esa tienda específica
+DECLARE
+    CURSOR c_juguetes IS
+        SELECT j.codigo, j.nombre, l.cant_prod
+        FROM LOTES_SET_TIENDA l
+        JOIN JUGUETES j ON l.cod_juguete = j.codigo
+        WHERE l.id_tienda = &tienda_elegida
+        AND l.cant_prod > 0
+        AND ROWNUM <= 15;
+    v_found BOOLEAN := FALSE;
+BEGIN
+    FOR r IN c_juguetes LOOP
+        DBMS_OUTPUT.PUT_LINE('ID JUGUETE: ' || r.codigo || ' | ' || r.nombre || ' | Stock: ' || r.cant_prod);
+        v_found := TRUE;
+    END LOOP;
+    
+    IF NOT v_found THEN
+        DBMS_OUTPUT.PUT_LINE('No hay stock disponible en esta tienda actualmente.');
+    END IF;
+END;
+/
+
+PROMPT ;
+PROMPT Mira el stock de arriba y elige tu juguete...;
+PROMPT ;
+
+-- 3. VENTANA EMERGENTE: Te pedirá Juguete y Cantidad
 DEFINE juguete_elegido = &Escribe_ID_Juguete;
 DEFINE cantidad_compra = &Escribe_Cantidad;
 
--- 3. PROCESAR LA COMPRA
+-- 4. PROCESAR LA COMPRA FINAL
 BEGIN
     SP_PROCESAR_COMPRA(
         p_anio        => &anio_elegido,
         p_id_pais     => &pais_elegido,
+        p_id_tienda   => &tienda_elegida,  -- Ahora enviamos la tienda
         p_cod_juguete => &juguete_elegido,
         p_cantidad    => &cantidad_compra
     );
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('ERROR EN LA COMPRA: ' || SQLERRM);
 END;
 /
+
+
+
+
+
 
 
 
@@ -72,55 +110,67 @@ END;
              Agregar juguetes al catalogo de una tienda y asignarle un lote
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+-- ======================================================================
+-- PASO 1: VER LISTA DE PAISES (Sombrea y presiona F5)
+-- ======================================================================
 SET SERVEROUTPUT ON;
-SET VERIFY OFF;
+PROMPT ;
+PROMPT [ LISTA DE PAISES DISPONIBLES ];
+PROMPT ;
 
-PROMPT =================================================;
-PROMPT        LISTA DE JUGUETES (MAESTRO)
-PROMPT =================================================;
-
-SELECT codigo, nombre, tipo_lego 
-FROM JUGUETES 
-WHERE ROWNUM <= 15 -- Muestro solo 15 para no saturar
+SELECT id AS ID_PAIS, nombre AS NOMBRE, continente 
+FROM PAISES 
+WHERE EXISTS (SELECT 1 FROM TIENDAS_LEGO t WHERE t.id_pais = PAISES.id)
 ORDER BY nombre;
 
-PROMPT ;
-PROMPT =================================================;
-PROMPT        TIENDAS DISPONIBLES POR PAIS
-PROMPT =================================================;
 
-SELECT 
-    p.id AS ID_PAIS,
-    p.nombre AS PAIS,
-    t.id AS ID_TIENDA,
-    t.nombre AS NOMBRE_TIENDA
-FROM PAISES p
-JOIN TIENDAS_LEGO t ON p.id = t.id_pais
-ORDER BY p.nombre, t.nombre;
+-- ======================================================================
+-- PASO 2: ELEGIR PAIS Y VER TIENDAS (Sombrea y presiona F5)
+-- ======================================================================
+-- Nota: Te pedirá el ID del país que viste arriba
+DEFINE v_pais_elegido = &Escribe_ID_Pais_del_Paso_1;
 
 PROMPT ;
-PROMPT Anota el ID_PAIS, ID_TIENDA y el CODIGO_JUGUETE...;
+PROMPT [ TIENDAS EN EL PAIS &v_pais_elegido ];
+PROMPT ;
+
+SELECT id AS ID_TIENDA, nombre AS NOMBRE_TIENDA, direccion
+FROM TIENDAS_LEGO
+WHERE id_pais = &v_pais_elegido
+ORDER BY nombre;
 
 
+-- ======================================================================
+-- PASO 3: VER CATALOGO DE JUGUETES (Sombrea y presiona F5)
+-- ======================================================================
+PROMPT ;
+PROMPT [ JUGUETES DISPONIBLES (Maestro) ];
+PROMPT ;
+
+SELECT codigo AS ID_JUGUETE, nombre, tipo_lego
+FROM JUGUETES
+WHERE ROWNUM <= 25
+ORDER BY nombre;
 
 
+-- ======================================================================
+-- PASO 4: EJECUTAR EL ABASTECIMIENTO (Sombrea y presiona F5)
+-- ======================================================================
 SET SERVEROUTPUT ON;
 SET VERIFY OFF;
 
--- Preguntas Interactivas
-DEFINE pais_id     = &ID_Pais_Destino;
-DEFINE tienda_id   = &ID_Tienda_Destino;
-DEFINE juguete_id  = &ID_Juguete_a_Agregar;
-DEFINE cantidad_st = &Cantidad_de_Stock;
+-- Te pedirá confirmar los datos que elegiste en los pasos anteriores
+DEFINE in_pais     = &Confirma_ID_Pais;
+DEFINE in_tienda   = &Escribe_ID_Tienda_Elegida;
+DEFINE in_juguete  = &Escribe_ID_Juguete_Elegido;
+DEFINE in_cantidad = &Escribe_Cantidad_Lote;
 
 BEGIN
-    SP_ALTA_CATALOGO_Y_STOCK(
-        p_id_pais     => &pais_id,
-        p_id_tienda   => &tienda_id,
-        p_cod_juguete => &juguete_id,
-        p_cantidad    => &cantidad_st,
-        p_limite_cat  => 10 -- Límite de compra por defecto (puedes cambiarlo si quieres)
+    SP_AGREGAR_STOCK(
+        p_id_pais     => &in_pais,
+        p_id_tienda   => &in_tienda,
+        p_cod_juguete => &in_juguete,
+        p_cantidad    => &in_cantidad
     );
 END;
 /
