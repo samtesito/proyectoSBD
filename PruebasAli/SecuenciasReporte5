@@ -1,0 +1,73 @@
+/////////////////////////////////////////////////////
+                COMPRA DE JUGUETE
+//////////////////////////////////////////////////////
+
+
+-- Ejecuta esto para ver el MENÚ DE PAÍSES
+SELECT 
+    p.id AS ID_PAIS, 
+    p.nombre AS PAIS, 
+    p.continente,
+    (SELECT COUNT(*) FROM TIENDAS_LEGO t WHERE t.id_pais = p.id) AS NRO_TIENDAS
+FROM PAISES p
+WHERE EXISTS (SELECT 1 FROM TIENDAS_LEGO t WHERE t.id_pais = p.id)
+ORDER BY p.nombre;
+
+-- Ejecuta esto para ver el MENÚ DE PAÍSESSET SERVEROUTPUT ON;
+SET VERIFY OFF;
+
+-- 1. VENTANA EMERGENTE: Te pedirá el Año y el País
+DEFINE anio_elegido = &Escribe_el_Anio_Venta;
+DEFINE pais_elegido = &Escribe_ID_Pais_Compra;
+
+PROMPT ==================================================;
+PROMPT       CATALOGO DISPONIBLE EN PAIS ID &pais_elegido;
+PROMPT ==================================================;
+
+-- Esto imprimirá en la consola los juguetes disponibles en ese país
+DECLARE
+    CURSOR c_juguetes IS
+        SELECT j.codigo, j.nombre, l.cant_prod, l.nro_lote
+        FROM CATALOGOS_LEGO c
+        JOIN JUGUETES j ON c.cod_juguete = j.codigo
+        JOIN TIENDAS_LEGO t ON c.id_pais = t.id_pais
+        JOIN LOTES_SET_TIENDA l ON l.cod_juguete = j.codigo AND l.id_tienda = t.id
+        WHERE c.id_pais = &pais_elegido
+        AND l.cant_prod > 0
+        AND ROWNUM <= 10; -- Muestra max 10 para no saturar
+BEGIN
+    FOR r IN c_juguetes LOOP
+        DBMS_OUTPUT.PUT_LINE('ID: ' || r.codigo || ' | ' || r.nombre || ' | Stock: ' || r.cant_prod);
+    END LOOP;
+END;
+/
+
+PROMPT ;
+PROMPT Mira la lista de arriba y elige tu juguete...;
+PROMPT ;
+
+-- 2. VENTANA EMERGENTE: Te pedirá Juguete y Cantidad
+-- (SQL Developer te pedirá esto inmediatamente después de lo anterior)
+DEFINE juguete_elegido = &Escribe_ID_Juguete;
+DEFINE cantidad_compra = &Escribe_Cantidad;
+
+-- 3. PROCESAR LA COMPRA
+BEGIN
+    SP_PROCESAR_COMPRA(
+        p_anio        => &anio_elegido,
+        p_id_pais     => &pais_elegido,
+        p_cod_juguete => &juguete_elegido,
+        p_cantidad    => &cantidad_compra
+    );
+END;
+/
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////
+                COMPRA DE JUGUETE
+//////////////////////////////////////////////////////
