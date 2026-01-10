@@ -174,3 +174,57 @@ BEGIN
     );
 END;
 /
+
+
+
+
+
+
+
+
+
+
+///
+Cambiar precio historico
+////
+
+
+
+
+SET SERVEROUTPUT ON;
+PROMPT ;
+PROMPT [ PRECIOS VIGENTES ACTUALMENTE ];
+PROMPT ;
+
+SELECT 
+    j.codigo AS ID, 
+    j.nombre AS JUGUETE, 
+    h.precio AS PRECIO_ACTUAL,
+    h.f_inicio AS VIGENTE_DESDE
+FROM JUGUETES j
+JOIN HISTORICO_PRECIOS_JUGUETES h ON j.codigo = h.cod_juguete
+WHERE h.f_fin IS NULL -- Solo mostramos el precio activo
+ORDER BY j.nombre;
+
+
+
+
+
+
+SET SERVEROUTPUT ON;
+SET VERIFY OFF;
+
+-- Preguntas
+DEFINE juguete_id  = &Escribe_ID_Juguete;
+DEFINE nuevo_monto = &Nuevo_Precio;
+DEFINE fecha_cambio = &Fecha_Inicio_DD_MM_AAAA; -- Escribe ej: 01/01/2026
+
+BEGIN
+    SP_ACTUALIZAR_PRECIO(
+        p_cod_juguete  => &juguete_id,
+        p_nuevo_precio => &nuevo_monto,
+        -- El cambio está aquí: SUBSTR corta el texto a 10 letras para evitar el error
+        p_fecha_inicio => TO_DATE(SUBSTR('&fecha_cambio', 1, 10), 'DD/MM/YYYY')
+    );
+END;
+/
