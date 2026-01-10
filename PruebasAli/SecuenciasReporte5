@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
                 COMPRA DE JUGUETE
-//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 -- Ejecuta esto para ver el MENÚ DE PAÍSES
@@ -68,6 +68,59 @@ END;
 
 
 
-/////////////////////////////////////////////////////
-                COMPRA DE JUGUETE
-//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+             Agregar juguetes al catalogo de una tienda y asignarle un lote
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+SET SERVEROUTPUT ON;
+SET VERIFY OFF;
+
+PROMPT =================================================;
+PROMPT        LISTA DE JUGUETES (MAESTRO)
+PROMPT =================================================;
+
+SELECT codigo, nombre, tipo_lego 
+FROM JUGUETES 
+WHERE ROWNUM <= 15 -- Muestro solo 15 para no saturar
+ORDER BY nombre;
+
+PROMPT ;
+PROMPT =================================================;
+PROMPT        TIENDAS DISPONIBLES POR PAIS
+PROMPT =================================================;
+
+SELECT 
+    p.id AS ID_PAIS,
+    p.nombre AS PAIS,
+    t.id AS ID_TIENDA,
+    t.nombre AS NOMBRE_TIENDA
+FROM PAISES p
+JOIN TIENDAS_LEGO t ON p.id = t.id_pais
+ORDER BY p.nombre, t.nombre;
+
+PROMPT ;
+PROMPT Anota el ID_PAIS, ID_TIENDA y el CODIGO_JUGUETE...;
+
+
+
+
+SET SERVEROUTPUT ON;
+SET VERIFY OFF;
+
+-- Preguntas Interactivas
+DEFINE pais_id     = &ID_Pais_Destino;
+DEFINE tienda_id   = &ID_Tienda_Destino;
+DEFINE juguete_id  = &ID_Juguete_a_Agregar;
+DEFINE cantidad_st = &Cantidad_de_Stock;
+
+BEGIN
+    SP_ALTA_CATALOGO_Y_STOCK(
+        p_id_pais     => &pais_id,
+        p_id_tienda   => &tienda_id,
+        p_cod_juguete => &juguete_id,
+        p_cantidad    => &cantidad_st,
+        p_limite_cat  => 10 -- Límite de compra por defecto (puedes cambiarlo si quieres)
+    );
+END;
+/
