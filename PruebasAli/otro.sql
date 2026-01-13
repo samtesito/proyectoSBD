@@ -777,11 +777,11 @@ END;
 
 
 
-CREATE OR REPLACE PROCEDURE SP_VENTA_ONLINE_RAPIDA (
+CREATE OR REPLACE PROCEDURE SP_VENTA_ONLINE_FECHA (
     p_id_pais     IN NUMBER,
     p_cod_juguete IN NUMBER,
     p_cantidad    IN NUMBER,
-    p_anio        IN NUMBER
+    p_fecha       IN DATE -- Nuevo parámetro: Fecha exacta
 ) IS
     v_id_cliente    NUMBER;
     v_nombre_pais   VARCHAR2(50);
@@ -791,46 +791,43 @@ CREATE OR REPLACE PROCEDURE SP_VENTA_ONLINE_RAPIDA (
     v_recargo       NUMBER(10,2);
     v_total         NUMBER(10,2);
     v_nro_fact      NUMBER;
-    v_fecha         DATE;
+    v_semestre      VARCHAR2(20);
     
     -- Excepciones
     ex_sin_cliente  EXCEPTION;
     ex_sin_precio   EXCEPTION;
 
 BEGIN
-    -- 1. BUSCAR UN CLIENTE "DEFAULT" EN ESE PAÍS
-    -- (Agarra el primer cliente que encuentre viviendo ahí)
+    -- 1. BUSCAR CLIENTE EN EL PAÍS (Automático)
     BEGIN
         SELECT id_lego INTO v_id_cliente
         FROM CLIENTES
         WHERE id_pais_resi = p_id_pais
-        AND ROWNUM = 1; -- Solo uno, el mismo siempre
+        AND ROWNUM = 1; 
     EXCEPTION
         WHEN NO_DATA_FOUND THEN RAISE ex_sin_cliente;
     END;
 
-    -- Obtener nombre del país para el mensaje
+    -- Obtener nombre del país
     SELECT nombre INTO v_nombre_pais FROM PAISES WHERE id = p_id_pais;
 
-    -- 2. CONFIGURAR DATOS DE VENTA
-    -- Fecha: 20 de Junio del año elegido (Semestre 1)
-    -- Si quieres Semestre 2, cambia a '20/10/' || p_anio
-    v_fecha := TO_DATE('20/06/' || p_anio, 'DD/MM/YYYY');
-    
-    -- 3. BUSCAR PRECIO Y CALCULAR
+    -- 2. BUSCAR PRECIO VIGENTE PARA ESA FECHA
     BEGIN
-        SELECT precio, nombre INTO v_precio, v_nombre_jug
+        SELECT h.precio, j.nombre 
+        INTO v_precio, v_nombre_jug
         FROM HISTORICO_PRECIOS_JUGUETES h
         JOIN JUGUETES j ON h.cod_juguete = j.codigo
         WHERE h.cod_juguete = p_cod_juguete 
-        AND h.f_fin IS NULL; -- Precio actual
+        AND p_fecha >= h.f_inicio 
+        AND (h.f_fin IS NULL OR p_fecha <= h.f_fin);
     EXCEPTION
         WHEN NO_DATA_FOUND THEN RAISE ex_sin_precio;
     END;
 
+    -- 3. CÁLCULOS
     v_subtotal := v_precio * p_cantidad;
 
-    -- Recargo simple: 5% si es UE, 15% si no (usando tu tabla PAISES)
+    -- Calcular recargo (5% UE, 15% Resto)
     DECLARE 
         v_es_ue NUMBER;
     BEGIN
@@ -843,31 +840,41 @@ BEGIN
     END;
 
     v_total := v_subtotal + v_recargo;
+    
+    -- Determinar Semestre para mostrarlo en el mensaje
+    IF EXTRACT(MONTH FROM p_fecha) <= 6 THEN
+        v_semestre := 'Semestre 1';
+    ELSE
+        v_semestre := 'Semestre 2';
+    END IF;
 
-    -- 4. INSERTAR FACTURA (Puntos = 0 porque no importan)
+    -- 4. INSERTAR FACTURA
     SELECT NVL(MAX(nro_fact), 700000) + 1 INTO v_nro_fact FROM FACTURAS_ONLINE;
 
     INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-    VALUES (v_nro_fact, v_fecha, v_id_cliente, 0, v_total);
+    VALUES (v_nro_fact, p_fecha, v_id_cliente, 0, v_total);
 
     INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
     VALUES (v_nro_fact, 1, p_cantidad, 'A', p_cod_juguete, p_id_pais);
 
     COMMIT;
 
-    -- 5. CONFIRMACIÓN RÁPIDA
-    DBMS_OUTPUT.PUT_LINE('>> VENTA REGISTRADA: ' || v_nombre_pais);
-    DBMS_OUTPUT.PUT_LINE('   Factura #' || v_nro_fact || ' | Total: $' || v_total || ' | Cliente ID: ' || v_id_cliente);
+    -- 5. REPORTE DE ÉXITO
+    DBMS_OUTPUT.PUT_LINE('--------------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE(' VENTA ONLINE REGISTRADA: ' || v_nombre_pais);
+    DBMS_OUTPUT.PUT_LINE(' Fecha: ' || p_fecha || ' (' || v_semestre || ')');
+    DBMS_OUTPUT.PUT_LINE(' Juguete: ' || v_nombre_jug);
+    DBMS_OUTPUT.PUT_LINE(' Total: $' || v_total || ' (Cliente usado: ' || v_id_cliente || ')');
+    DBMS_OUTPUT.PUT_LINE('--------------------------------------------------');
 
 EXCEPTION
     WHEN ex_sin_cliente THEN 
-        RAISE_APPLICATION_ERROR(-20001, 'Error: No hay clientes registrados viviendo en el país ID ' || p_id_pais || '. Crea un cliente primero.');
+        RAISE_APPLICATION_ERROR(-20001, 'No hay clientes registrados en ' || v_nombre_pais);
     WHEN ex_sin_precio THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Error: El juguete no tiene precio histórico activo.');
+        RAISE_APPLICATION_ERROR(-20002, 'No se encontró un precio histórico válido para el juguete en la fecha ' || p_fecha);
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE_APPLICATION_ERROR(-20003, SQLERRM);
 END;
 /
-
 
