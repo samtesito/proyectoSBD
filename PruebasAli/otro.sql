@@ -479,10 +479,11 @@ END;
 CREATE OR REPLACE PROCEDURE SP_PROCESAR_COMPRA (
     p_anio        IN NUMBER,
     p_id_pais     IN NUMBER,
-    p_id_tienda   IN NUMBER, -- Nuevo parámetro: La tienda elegida
+    -- p_id_tienda eliminada, ya no es necesaria
     p_cod_juguete IN NUMBER,
     p_cantidad    IN NUMBER
 ) IS
+    v_id_tienda      NUMBER; -- Variable interna para guardar el ID detectado
     v_nombre_tienda  VARCHAR2(100);
     v_nombre_juguete VARCHAR2(100);
     v_precio         NUMBER(10,2);
@@ -492,7 +493,6 @@ CREATE OR REPLACE PROCEDURE SP_PROCESAR_COMPRA (
     v_total          NUMBER(10,2);
     v_cliente_def    NUMBER := 1001; 
     v_fecha_compra   DATE;
-    v_check_tienda   NUMBER;
     
     -- Errores personalizados
     ex_tienda_error  EXCEPTION;
@@ -500,15 +500,16 @@ CREATE OR REPLACE PROCEDURE SP_PROCESAR_COMPRA (
     ex_no_precio     EXCEPTION;
 
 BEGIN
-    -- 1. VALIDAR QUE LA TIENDA PERTENECE AL PAÍS
-    SELECT COUNT(*) INTO v_check_tienda
-    FROM TIENDAS_LEGO
-    WHERE id = p_id_tienda AND id_pais = p_id_pais;
-
-    IF v_check_tienda = 0 THEN RAISE ex_tienda_error; END IF;
-
-    -- Obtener nombre de la tienda para el recibo
-    SELECT nombre INTO v_nombre_tienda FROM TIENDAS_LEGO WHERE id = p_id_tienda;
+    -- 1. AUTO-DETECTAR TIENDA BASADO EN EL PAÍS
+    BEGIN
+        SELECT id, nombre INTO v_id_tienda, v_nombre_tienda
+        FROM TIENDAS_LEGO
+        WHERE id_pais = p_id_pais
+        FETCH FIRST 1 ROW ONLY; -- Toma la única tienda del país
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE ex_tienda_error;
+    END;
 
     -- 2. CONFIGURAR FECHA
     v_fecha_compra := TO_DATE('15/06/' || p_anio, 'DD/MM/YYYY');
@@ -520,7 +521,7 @@ BEGIN
         WHERE cod_juguete = p_cod_juguete
         AND v_fecha_compra >= f_inicio 
         AND (f_fin IS NULL OR v_fecha_compra <= f_fin)
-        AND ROWNUM = 1;
+        FETCH FIRST 1 ROW ONLY;
     EXCEPTION
         WHEN NO_DATA_FOUND THEN RAISE ex_no_precio;
     END;
@@ -528,14 +529,14 @@ BEGIN
     -- 4. OBTENER NOMBRE DEL JUGUETE
     SELECT nombre INTO v_nombre_juguete FROM JUGUETES WHERE codigo = p_cod_juguete;
 
-    -- 5. VERIFICAR STOCK (EN LA TIENDA ESPECÍFICA)
+    -- 5. VERIFICAR STOCK (Usando v_id_tienda detectado)
     BEGIN
         SELECT nro_lote, cant_prod INTO v_nro_lote, v_stock
         FROM LOTES_SET_TIENDA
-        WHERE id_tienda = p_id_tienda 
+        WHERE id_tienda = v_id_tienda 
         AND cod_juguete = p_cod_juguete 
         AND cant_prod >= p_cantidad
-        AND ROWNUM = 1;
+        FETCH FIRST 1 ROW ONLY;
     EXCEPTION
         WHEN NO_DATA_FOUND THEN RAISE ex_no_stock;
     END;
@@ -545,15 +546,15 @@ BEGIN
     SELECT NVL(MAX(nro_fact), 0) + 1 INTO v_nro_factura FROM FACTURAS_TIENDA;
 
     INSERT INTO FACTURAS_TIENDA (nro_fact, id_cliente, id_tienda, f_emision, total)
-    VALUES (v_nro_factura, v_cliente_def, p_id_tienda, v_fecha_compra, v_total);
+    VALUES (v_nro_factura, v_cliente_def, v_id_tienda, v_fecha_compra, v_total);
 
     INSERT INTO DETALLES_FACTURA_TIENDA (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_tienda, nro_lote)
-    VALUES (v_nro_factura, 1, p_cantidad, 'A', p_cod_juguete, p_id_tienda, v_nro_lote);
+    VALUES (v_nro_factura, 1, p_cantidad, 'A', p_cod_juguete, v_id_tienda, v_nro_lote);
 
     -- 7. DESCONTAR INVENTARIO
     UPDATE LOTES_SET_TIENDA 
     SET cant_prod = cant_prod - p_cantidad
-    WHERE id_tienda = p_id_tienda AND cod_juguete = p_cod_juguete AND nro_lote = v_nro_lote;
+    WHERE id_tienda = v_id_tienda AND cod_juguete = p_cod_juguete AND nro_lote = v_nro_lote;
 
     COMMIT;
 
@@ -568,9 +569,9 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('========================================');
 
 EXCEPTION
-    WHEN ex_tienda_error THEN RAISE_APPLICATION_ERROR(-20001, 'La tienda seleccionada no pertenece al país indicado.');
+    WHEN ex_tienda_error THEN RAISE_APPLICATION_ERROR(-20001, 'No existe una tienda registrada para el país ID ' || p_id_pais);
     WHEN ex_no_precio THEN RAISE_APPLICATION_ERROR(-20002, 'No hay precio histórico válido para la fecha.');
-    WHEN ex_no_stock  THEN RAISE_APPLICATION_ERROR(-20003, 'Stock insuficiente en la tienda seleccionada.');
+    WHEN ex_no_stock  THEN RAISE_APPLICATION_ERROR(-20003, 'Stock insuficiente en la tienda ' || v_nombre_tienda);
     WHEN OTHERS THEN RAISE_APPLICATION_ERROR(-20004, SQLERRM);
 END;
 /
