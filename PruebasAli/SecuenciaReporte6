@@ -9,3 +9,53 @@ FROM PAISES p
 JOIN CLIENTES c ON p.id = c.id_pais_resi
 GROUP BY p.id, p.nombre, p.continente
 ORDER BY p.nombre;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SET SERVEROUTPUT ON;
+SET VERIFY OFF;
+
+-- 1. Pide País
+DEFINE pais_venta = &Ingresa_ID_Pais;
+
+PROMPT ;
+PROMPT [ JUGUETES DISPONIBLES EN ESTE PAÍS ];
+PROMPT ;
+
+SELECT j.codigo, j.nombre, c.limite 
+FROM CATALOGOS_LEGO c
+JOIN JUGUETES j ON c.cod_juguete = j.codigo
+WHERE c.id_pais = &pais_venta
+ORDER BY j.nombre;
+
+PROMPT ;
+PROMPT >> Ahora ingresa los datos de la venta (incluida la FECHA)...;
+PROMPT ;
+
+-- 2. Pide Resto de Datos
+DEFINE jug_venta   = &ID_Juguete;
+DEFINE cant_venta  = &Cantidad;
+DEFINE fecha_venta = &Fecha_DD_MM_AAAA; -- Escribe ej: 15/08/2025
+
+BEGIN
+    SP_VENTA_ONLINE_FECHA(
+        p_id_pais     => &pais_venta,
+        p_cod_juguete => &jug_venta,
+        p_cantidad    => &cant_venta,
+        -- Usamos SUBSTR para evitar el error ORA-01830 si se te va un espacio
+        p_fecha       => TO_DATE(SUBSTR('&fecha_venta', 1, 10), 'DD/MM/YYYY')
+    );
+END;
+/
