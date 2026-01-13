@@ -763,3 +763,111 @@ END;
 /
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE PROCEDURE SP_VENTA_ONLINE_RAPIDA (
+    p_id_pais     IN NUMBER,
+    p_cod_juguete IN NUMBER,
+    p_cantidad    IN NUMBER,
+    p_anio        IN NUMBER
+) IS
+    v_id_cliente    NUMBER;
+    v_nombre_pais   VARCHAR2(50);
+    v_nombre_jug    VARCHAR2(100);
+    v_precio        NUMBER(10,2);
+    v_subtotal      NUMBER(10,2);
+    v_recargo       NUMBER(10,2);
+    v_total         NUMBER(10,2);
+    v_nro_fact      NUMBER;
+    v_fecha         DATE;
+    
+    -- Excepciones
+    ex_sin_cliente  EXCEPTION;
+    ex_sin_precio   EXCEPTION;
+
+BEGIN
+    -- 1. BUSCAR UN CLIENTE "DEFAULT" EN ESE PAÍS
+    -- (Agarra el primer cliente que encuentre viviendo ahí)
+    BEGIN
+        SELECT id_lego INTO v_id_cliente
+        FROM CLIENTES
+        WHERE id_pais_resi = p_id_pais
+        AND ROWNUM = 1; -- Solo uno, el mismo siempre
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN RAISE ex_sin_cliente;
+    END;
+
+    -- Obtener nombre del país para el mensaje
+    SELECT nombre INTO v_nombre_pais FROM PAISES WHERE id = p_id_pais;
+
+    -- 2. CONFIGURAR DATOS DE VENTA
+    -- Fecha: 20 de Junio del año elegido (Semestre 1)
+    -- Si quieres Semestre 2, cambia a '20/10/' || p_anio
+    v_fecha := TO_DATE('20/06/' || p_anio, 'DD/MM/YYYY');
+    
+    -- 3. BUSCAR PRECIO Y CALCULAR
+    BEGIN
+        SELECT precio, nombre INTO v_precio, v_nombre_jug
+        FROM HISTORICO_PRECIOS_JUGUETES h
+        JOIN JUGUETES j ON h.cod_juguete = j.codigo
+        WHERE h.cod_juguete = p_cod_juguete 
+        AND h.f_fin IS NULL; -- Precio actual
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN RAISE ex_sin_precio;
+    END;
+
+    v_subtotal := v_precio * p_cantidad;
+
+    -- Recargo simple: 5% si es UE, 15% si no (usando tu tabla PAISES)
+    DECLARE 
+        v_es_ue NUMBER;
+    BEGIN
+        SELECT CASE WHEN ue = 'TRUE' THEN 1 ELSE 0 END INTO v_es_ue 
+        FROM PAISES WHERE id = p_id_pais;
+        
+        IF v_es_ue = 1 THEN v_recargo := v_subtotal * 0.05;
+        ELSE v_recargo := v_subtotal * 0.15;
+        END IF;
+    END;
+
+    v_total := v_subtotal + v_recargo;
+
+    -- 4. INSERTAR FACTURA (Puntos = 0 porque no importan)
+    SELECT NVL(MAX(nro_fact), 700000) + 1 INTO v_nro_fact FROM FACTURAS_ONLINE;
+
+    INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
+    VALUES (v_nro_fact, v_fecha, v_id_cliente, 0, v_total);
+
+    INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
+    VALUES (v_nro_fact, 1, p_cantidad, 'A', p_cod_juguete, p_id_pais);
+
+    COMMIT;
+
+    -- 5. CONFIRMACIÓN RÁPIDA
+    DBMS_OUTPUT.PUT_LINE('>> VENTA REGISTRADA: ' || v_nombre_pais);
+    DBMS_OUTPUT.PUT_LINE('   Factura #' || v_nro_fact || ' | Total: $' || v_total || ' | Cliente ID: ' || v_id_cliente);
+
+EXCEPTION
+    WHEN ex_sin_cliente THEN 
+        RAISE_APPLICATION_ERROR(-20001, 'Error: No hay clientes registrados viviendo en el país ID ' || p_id_pais || '. Crea un cliente primero.');
+    WHEN ex_sin_precio THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Error: El juguete no tiene precio histórico activo.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20003, SQLERRM);
+END;
+/
+
+
