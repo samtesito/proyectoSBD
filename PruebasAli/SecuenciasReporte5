@@ -7,85 +7,66 @@
 SELECT 
     p.id AS ID_PAIS, 
     p.nombre AS PAIS, 
-    p.continente,
-    (SELECT COUNT(*) FROM TIENDAS_LEGO t WHERE t.id_pais = p.id) AS NRO_TIENDAS
+    (SELECT COUNT(*) FROM TIENDAS_LEGO t WHERE t.id_pais = p.id) AS TIENDA_ACTIVA
 FROM PAISES p
 WHERE EXISTS (SELECT 1 FROM TIENDAS_LEGO t WHERE t.id_pais = p.id)
 ORDER BY p.nombre;
 
-
--- AHORA EJECUTA ESTE BLOQUE COMPLETO PARA INICIAR LA COMPRA
+-- BLOQUE DE COMPRA SIMPLIFICADO
 SET SERVEROUTPUT ON;
 SET VERIFY OFF;
 
--- 1. VENTANA EMERGENTE: Te pedirá el Año y el País
+-- 1. SOLICITUD DE DATOS INICIALES
 DEFINE anio_elegido = &Escribe_el_Anio_Venta;
 DEFINE pais_elegido = &Escribe_ID_Pais_Compra;
 
 PROMPT ==================================================;
-PROMPT        TIENDAS DISPONIBLES EN PAIS ID &pais_elegido;
+PROMPT    BUSCANDO STOCK EN LA TIENDA DEL PAIS &pais_elegido...;
 PROMPT ==================================================;
 
--- Esto imprimirá las tiendas del país seleccionado
-DECLARE
-    CURSOR c_tiendas IS
-        SELECT id, nombre, direccion 
-        FROM TIENDAS_LEGO 
-        WHERE id_pais = &pais_elegido;
-BEGIN
-    FOR t IN c_tiendas LOOP
-        DBMS_OUTPUT.PUT_LINE('ID TIENDA: ' || t.id || ' | ' || t.nombre || ' (' || t.direccion || ')');
-    END LOOP;
-END;
-/
-
-PROMPT ;
-PROMPT Elija una tienda de la lista de arriba...;
-PROMPT ;
-
--- 2. VENTANA EMERGENTE: Te pedirá la Tienda
-DEFINE tienda_elegida = &Escribe_ID_Tienda_Compra;
-
-PROMPT ==================================================;
-PROMPT    STOCK EN LA TIENDA SELECCIONADA (ID &tienda_elegida);
-PROMPT ==================================================;
-
--- Esto imprimirá los juguetes QUE TIENEN STOCK en esa tienda específica
+-- 2. MOSTRAR STOCK (Automático por país)
 DECLARE
     CURSOR c_juguetes IS
-        SELECT j.codigo, j.nombre, l.cant_prod
+        SELECT j.codigo, j.nombre, l.cant_prod, t.nombre as nombre_tienda
         FROM LOTES_SET_TIENDA l
         JOIN JUGUETES j ON l.cod_juguete = j.codigo
-        WHERE l.id_tienda = &tienda_elegida
+        JOIN TIENDAS_LEGO t ON l.id_tienda = t.id
+        WHERE t.id_pais = &pais_elegido  -- <-- FILTRO DIRECTO POR PAIS
         AND l.cant_prod > 0
         AND ROWNUM <= 15;
+        
     v_found BOOLEAN := FALSE;
+    v_tienda_nombre VARCHAR2(100);
 BEGIN
     FOR r IN c_juguetes LOOP
+        IF v_found = FALSE THEN
+            DBMS_OUTPUT.PUT_LINE('Tienda Detectada: ' || r.nombre_tienda);
+            DBMS_OUTPUT.PUT_LINE('--------------------------------------------------');
+        END IF;
         DBMS_OUTPUT.PUT_LINE('ID JUGUETE: ' || r.codigo || ' | ' || r.nombre || ' | Stock: ' || r.cant_prod);
         v_found := TRUE;
     END LOOP;
     
     IF NOT v_found THEN
-        DBMS_OUTPUT.PUT_LINE('No hay stock disponible en esta tienda actualmente.');
+        DBMS_OUTPUT.PUT_LINE('No hay stock disponible o no existe tienda en este país.');
     END IF;
 END;
 /
 
 PROMPT ;
-PROMPT Mira el stock de arriba y elige tu juguete...;
+PROMPT Elige tu juguete del stock mostrado arriba...;
 PROMPT ;
 
--- 3. VENTANA EMERGENTE: Te pedirá Juguete y Cantidad
+-- 3. SOLICITUD DE PRODUCTO
 DEFINE juguete_elegido = &Escribe_ID_Juguete;
 DEFINE cantidad_compra = &Escribe_Cantidad;
 
--- 4. PROCESAR LA COMPRA FINAL
+-- 4. PROCESAR LA COMPRA (Llamada simplificada)
 BEGIN
     SP_PROCESAR_COMPRA(
         p_anio        => &anio_elegido,
         p_id_pais     => &pais_elegido,
-        p_id_tienda   => &tienda_elegida,  -- Ahora enviamos la tienda
+        -- Ya no enviamos la tienda, el SP la busca solo
         p_cod_juguete => &juguete_elegido,
         p_cantidad    => &cantidad_compra
     );
@@ -94,6 +75,7 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('ERROR EN LA COMPRA: ' || SQLERRM);
 END;
 /
+
 
 
 
