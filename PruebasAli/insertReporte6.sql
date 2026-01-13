@@ -1,143 +1,114 @@
-------------------------------------------------------------
--- DATOS PARA REPORTE 6: VENTAS ONLINE (Semestrales)
-------------------------------------------------------------
+SET SERVEROUTPUT ON;
 
--- Aseguramos catalogo para Venezuela y España
-INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES (58, 409, 100); -- Groot en Vzla
-INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite) VALUES (34, 408, 100); -- Spiderman en España
+DECLARE
+    -- Configuración
+    v_years         SYS.ODCINUMBERLIST := SYS.ODCINUMBERLIST(2024, 2025, 2026); -- Años a generar
+    
+    -- Variables de trabajo
+    v_factura_id    NUMBER;
+    v_detalle_id    NUMBER;
+    v_cliente_id    NUMBER;
+    v_precio        NUMBER;
+    v_fecha_venta   DATE;
+    v_semestre      NUMBER;
+    
+    -- Contadores
+    v_nuevos_cli    NUMBER := 0;
+    
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('=== INICIANDO GENERACIÓN DE VENTAS ONLINE (REPORTE 6) ===');
+    
+    -- 1. LIMPIEZA PREVIA (Opcional: borra ventas online anteriores para no duplicar reporte)
+    -- DELETE FROM DETALLES_FACTURA_ONLINE;
+    -- DELETE FROM FACTURAS_ONLINE;
+    -- COMMIT;
+    
+    -- Inicializar IDs
+    SELECT NVL(MAX(nro_fact), 700000) INTO v_factura_id FROM FACTURAS_ONLINE;
 
--- VENEZUELA: Venta Semestre 1, 2025
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800001, TO_DATE('15/03/2025','DD/MM/YYYY'), 1001, 50, 200.00); -- Marzo (Sem 1)
+    -- ==============================================================================
+    -- BUCLE PRINCIPAL: Recorrer PAISES -> AÑOS -> SEMESTRES
+    -- ==============================================================================
+    FOR r_pais IN (SELECT id, nombre, gentilicio FROM PAISES ORDER BY id) LOOP
+        
+        -- A. OBTENER O CREAR CLIENTE PARA ESTE PAÍS
+        -- (Las ventas online dependen del país de residencia del cliente)
+        BEGIN
+            SELECT id_lego INTO v_cliente_id
+            FROM CLIENTES 
+            WHERE id_pais_resi = r_pais.id 
+            FETCH FIRST 1 ROW ONLY;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                -- Si no hay cliente en este país, creamos uno dummy
+                SELECT NVL(MAX(id_lego), 1000) + 1 INTO v_cliente_id FROM CLIENTES;
+                
+                INSERT INTO CLIENTES (id_lego, prim_nom, prim_ape, seg_ape, f_nacim, dni, id_pais_resi)
+                VALUES (v_cliente_id, 'Cliente', 'Online', r_pais.gentilicio, TO_DATE('1990-01-01','YYYY-MM-DD'), 'ONL-'||r_pais.id, r_pais.id);
+                
+                v_nuevos_cli := v_nuevos_cli + 1;
+        END;
 
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800001, 1, 5, 'A', 408, 58);
+        -- B. RECORRER AÑOS (2024, 2025, 2026)
+        FOR y IN 1..v_years.COUNT LOOP
+            
+            -- C. RECORRER SEMESTRES (1 y 2)
+            FOR sem IN 1..2 LOOP
+                
+                -- Definir fecha según semestre
+                IF sem = 1 THEN
+                    -- Semestre 1: 15 de Marzo
+                    v_fecha_venta := TO_DATE('15/03/' || v_years(y), 'DD/MM/YYYY');
+                ELSE
+                    -- Semestre 2: 20 de Octubre
+                    v_fecha_venta := TO_DATE('20/10/' || v_years(y), 'DD/MM/YYYY');
+                END IF;
 
--- VENEZUELA: Venta Semestre 2, 2025
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800002, TO_DATE('10/09/2025','DD/MM/YYYY'), 1001, 20, 100.00); -- Septiembre (Sem 2)
+                -- D. SELECCIONAR UN JUGUETE AL AZAR
+                FOR r_toy IN (SELECT codigo FROM JUGUETES ORDER BY DBMS_RANDOM.VALUE FETCH FIRST 1 ROW ONLY) LOOP
+                    
+                    -- 1. Asegurar que está en el catálogo (Regla de negocio online)
+                    INSERT INTO CATALOGOS_LEGO (id_pais, cod_juguete, limite)
+                    SELECT r_pais.id, r_toy.codigo, 1000 FROM DUAL
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM CATALOGOS_LEGO WHERE id_pais = r_pais.id AND cod_juguete = r_toy.codigo
+                    );
 
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800002, 1, 2, 'A', 409, 58);
+                    -- 2. Buscar Precio Histórico
+                    BEGIN
+                        SELECT precio INTO v_precio
+                        FROM HISTORICO_PRECIOS_JUGUETES
+                        WHERE cod_juguete = r_toy.codigo 
+                          AND v_fecha_venta >= f_inicio
+                          AND (f_fin IS NULL OR v_fecha_venta <= f_fin)
+                        FETCH FIRST 1 ROW ONLY;
+                    EXCEPTION 
+                        WHEN NO_DATA_FOUND THEN v_precio := 45; -- Precio default
+                    END;
 
--- ESPAÑA: Venta Semestre 1, 2025 (Debe salir ordenado según ventas totales)
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800003, TO_DATE('05/05/2025','DD/MM/YYYY'), 1008, 100, 500.00); -- Mayo (Sem 1)
+                    -- 3. Crear Factura Online
+                    v_factura_id := v_factura_id + 1;
+                    
+                    -- Nota: Asumo que FACTURAS_ONLINE tiene campos similares a la de Tienda
+                    -- Si tu tabla tiene columnas diferentes, ajústalas aquí.
+                    INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, total, id_cliente)
+                    VALUES (v_factura_id, v_fecha_venta, v_precio, v_cliente_id);
 
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800003, 1, 10, 'A', 408, 34);
+                    -- 4. Crear Detalle Online
+                    -- Nota: En tu archivo inserts.sql vi que el detalle online lleva 'id_pais'
+                    INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
+                    VALUES (v_factura_id, 1, 1, 'A', r_toy.codigo, r_pais.id);
 
-COMMIT;
+                END LOOP; -- Fin Juguete
 
+            END LOOP; -- Fin Semestres
+        END LOOP; -- Fin Años
 
+    END LOOP; -- Fin Países
 
-
-------------------------------------------------------------
--- DATOS EXTRA REPORTE 6: AÑOS 2024 y 2026 (Solo Semestre 1)
-------------------------------------------------------------
-
--- ==========================================
--- AÑO 2024 - SEMESTRE 1 (Enero - Junio)
--- ==========================================
-
--- VENEZUELA (Zona Dólar) - Enero 2024
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800010, TO_DATE('15/01/2024','DD/MM/YYYY'), 1001, 30, 150.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800010, 1, 3, 'A', 409, 58);
-
--- ESPAÑA (Zona Euro) - Abril 2024
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800011, TO_DATE('20/04/2024','DD/MM/YYYY'), 1008, 80, 420.50); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800011, 1, 8, 'A', 408, 34);
-
-
--- ==========================================
--- AÑO 2026 - SEMESTRE 1 (Enero - Junio)
--- ==========================================
-
--- VENEZUELA (Zona Dólar) - Febrero 2026 (Venta grande para probar ordenamiento)
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800020, TO_DATE('14/02/2026','DD/MM/YYYY'), 1001, 150, 800.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800020, 1, 10, 'A', 409, 58);
-
--- ESPAÑA (Zona Euro) - Marzo 2026 (Venta pequeña)
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800021, TO_DATE('10/03/2026','DD/MM/YYYY'), 1008, 10, 55.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800021, 1, 1, 'A', 408, 34);
-
-COMMIT;
-
-
-
-
-
--------------------------------------------------------------------------
--- DATOS DE RELLENO: SEMESTRE 2 (2024, 2026) Y REFUERZO SEMESTRE 1 (2025)
--------------------------------------------------------------------------
-
--- ===================================================
--- AÑO 2024 - SEMESTRE 2 (Julio - Diciembre)
--- ===================================================
-
--- VENEZUELA (Zona Dólar) - Agosto 2024
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800030, TO_DATE('15/08/2024','DD/MM/YYYY'), 1001, 40, 200.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800030, 1, 4, 'A', 409, 58);
-
--- ESPAÑA (Zona Euro) - Noviembre 2024 (Navidad adelantada)
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800031, TO_DATE('20/11/2024','DD/MM/YYYY'), 1008, 120, 600.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800031, 1, 10, 'A', 408, 34);
-
-
--- ===================================================
--- AÑO 2025 - SEMESTRE 1 (Refuerzo extra)
--- ===================================================
--- Nota: Ya tenías datos aquí, pero agregamos más para dar volumen.
-
--- VENEZUELA (Zona Dólar) - Febrero 2025
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800040, TO_DATE('14/02/2025','DD/MM/YYYY'), 1001, 25, 120.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800040, 1, 2, 'A', 409, 58);
-
--- ESPAÑA (Zona Euro) - Junio 2025
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800041, TO_DATE('01/06/2025','DD/MM/YYYY'), 1008, 60, 300.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800041, 1, 5, 'A', 408, 34);
-
-
--- ===================================================
--- AÑO 2026 - SEMESTRE 2 (Julio - Diciembre)
--- ===================================================
-
--- VENEZUELA (Zona Dólar) - Octubre 2026
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800050, TO_DATE('31/10/2026','DD/MM/YYYY'), 1001, 10, 50.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800050, 1, 1, 'A', 409, 58);
-
--- ESPAÑA (Zona Euro) - Diciembre 2026 (Fin de año)
-INSERT INTO FACTURAS_ONLINE (nro_fact, f_emision, id_cliente, ptos_generados, total)
-VALUES (800051, TO_DATE('24/12/2026','DD/MM/YYYY'), 1008, 200, 1000.00); 
-
-INSERT INTO DETALLES_FACTURA_ONLINE (nro_fact, id_det_fact, cant_prod, tipo_cli, cod_juguete, id_pais)
-VALUES (800051, 1, 20, 'A', 408, 34);
-
-COMMIT;
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('=== PROCESO FINALIZADO ===');
+    DBMS_OUTPUT.PUT_LINE('Se crearon clientes nuevos: ' || v_nuevos_cli);
+    DBMS_OUTPUT.PUT_LINE('Última factura generada: ' || v_factura_id);
+END;
+/
