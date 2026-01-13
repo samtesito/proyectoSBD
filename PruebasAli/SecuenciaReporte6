@@ -1,0 +1,11 @@
+SET SERVEROUTPUT ON;
+-- Muestra países que tienen clientes (porque necesitamos un cliente para facturar)
+PROMPT =================================================;
+PROMPT   ELIGE EL PAÍS PARA AUMENTAR SUS VENTAS ONLINE
+PROMPT =================================================;
+
+SELECT p.id AS ID_PAIS, p.nombre, p.continente, COUNT(c.id_lego) as CLIENTES_DISPONIBLES
+FROM PAISES p
+JOIN CLIENTES c ON p.id = c.id_pais_resi
+GROUP BY p.id, p.nombre, p.continente
+ORDER BY p.nombre;
