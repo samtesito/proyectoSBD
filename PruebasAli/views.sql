@@ -4,10 +4,9 @@ SELECT
     p.continente,
     p.nombre AS pais,
     j.nombre AS nombre_juguete,
-    t.nombre AS nombre_tema, -- Agregado por si quieres filtrar por tema
+    t.nombre AS nombre_tema, 
     SUM(df.cant_prod) AS total_unidades_vendidas,
-    SUM(df.cant_prod * h.precio) AS total_ingresos, -- Estimado usando precio actual
-    -- La magia: Esto crea un ranking del 1 al N por cada Año y País
+    SUM(df.cant_prod * h.precio) AS total_ingresos, 
     DENSE_RANK() OVER (
         PARTITION BY EXTRACT(YEAR FROM f.f_emision), p.continente, p.nombre 
         ORDER BY SUM(df.cant_prod) DESC
@@ -39,23 +38,19 @@ GROUP BY
     EXTRACT(YEAR FROM f.f_emision) AS anio,
     j.nombre AS nombre_juguete,
     
-    -- 1. Métricas Numéricas (Estas SÍ se suman bien)
     SUM(d.cant_prod) AS total_unidades,
     SUM(d.cant_prod * h.precio) AS total_monetario,
     
-    -- 2. Columna SOLO para el Símbolo (Texto)
     CASE 
         WHEN p.ue = 1 THEN '€' 
         ELSE '$' 
     END AS moneda,
     
-    -- 3. Ranking Inteligente (Para el Top 3 con empates)
     DENSE_RANK() OVER (
         PARTITION BY p.nombre, EXTRACT(YEAR FROM f.f_emision) 
         ORDER BY SUM(d.cant_prod * h.precio) DESC
     ) AS numero_ranking,
     
-    -- 4. Etiqueta visual
     'Top ' || DENSE_RANK() OVER (
         PARTITION BY p.nombre, EXTRACT(YEAR FROM f.f_emision) 
         ORDER BY SUM(d.cant_prod * h.precio) DESC
@@ -99,7 +94,7 @@ SELECT
     END AS SEMESTRE,
     p.nombre AS pais,
     p.continente,
-    SUM(fo.total) AS total_venta_moneda_origen, -- Total tal cual viene en la factura
+    SUM(fo.total) AS total_venta_moneda_origen, 
     COUNT(fo.nro_fact) AS cantidad_facturas
 FROM 
     FACTURAS_ONLINE fo
@@ -114,4 +109,5 @@ GROUP BY
     p.nombre,
     p.continente;
     t.nombre;
+
 
