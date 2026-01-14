@@ -112,3 +112,64 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Última factura generada: ' || v_factura_id);
 END;
 /
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_detalles_count NUMBER;
+    v_facturas_count NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('=== ELIMINANDO VENTAS ONLINE (PANAMÁ, BRASIL, CHILE) ===');
+
+    -- 1. Borrar DETALLES de facturas online
+    -- Usamos el campo id_pais si existe en detalles, o filtramos por cliente/país
+    DELETE FROM DETALLES_FACTURA_ONLINE 
+    WHERE nro_fact IN (
+        SELECT f.nro_fact
+        FROM FACTURAS_ONLINE f
+        JOIN CLIENTES c ON f.id_cliente = c.id_lego
+        JOIN PAISES p ON c.id_pais_resi = p.id
+        WHERE UPPER(p.nombre) IN ('PANAMÁ', 'PANAMA', 'BRASIL', 'CHILE')
+    );
+    
+    v_detalles_count := SQL%ROWCOUNT;
+    DBMS_OUTPUT.PUT_LINE('-> Se eliminaron ' || v_detalles_count || ' líneas de detalle de productos.');
+
+    -- 2. Borrar FACTURAS online (Cabecera)
+    DELETE FROM FACTURAS_ONLINE 
+    WHERE id_cliente IN (
+        SELECT c.id_lego
+        FROM CLIENTES c
+        JOIN PAISES p ON c.id_pais_resi = p.id
+        WHERE UPPER(p.nombre) IN ('PANAMÁ', 'PANAMA', 'BRASIL', 'CHILE')
+    );
+    
+    v_facturas_count := SQL%ROWCOUNT;
+    DBMS_OUTPUT.PUT_LINE('-> Se eliminaron ' || v_facturas_count || ' facturas.');
+
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('=============================================');
+    DBMS_OUTPUT.PUT_LINE('LIMPIEZA DE VENTAS ONLINE COMPLETADA.');
+    DBMS_OUTPUT.PUT_LINE('Los países, clientes y tiendas siguen existiendo.');
+END;
+/
