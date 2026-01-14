@@ -382,3 +382,86 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('>>> DATOS 2026 GENERADOS CON ÉXITO <<<');
 END;
 /
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_id_tienda NUMBER := 10; -- La tienda a eliminar
+    v_count     NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('=== INTENTO FINAL: ELIMINANDO TIENDA ID ' || v_id_tienda || ' ===');
+
+    -- 1. Borrar Detalles de Facturas
+    DELETE FROM DETALLES_FACTURA_TIENDA WHERE id_tienda = v_id_tienda;
+    
+    -- 2. Borrar Facturas
+    DELETE FROM FACTURAS_TIENDA WHERE id_tienda = v_id_tienda;
+    
+    -- 3. Borrar Descuentos (Si existen)
+    BEGIN
+        DELETE FROM DESCUENTOS 
+        WHERE (cod_juguete, id_tienda, nro_lote) IN (
+            SELECT cod_juguete, id_tienda, nro_lote
+            FROM LOTES_SET_TIENDA
+            WHERE id_tienda = v_id_tienda
+        );
+    EXCEPTION WHEN OTHERS THEN NULL; END;
+
+    -- 4. Borrar Inventario (Lotes)
+    DELETE FROM LOTES_SET_TIENDA WHERE id_tienda = v_id_tienda;
+    
+    -- 5. Borrar HORARIOS (CORREGIDO: Tabla HORARIOS_ATENCION)
+    BEGIN
+        DELETE FROM HORARIOS_ATENCION WHERE id_tienda = v_id_tienda;
+        DBMS_OUTPUT.PUT_LINE('-> Horarios eliminados.');
+    EXCEPTION 
+        WHEN OTHERS THEN 
+            DBMS_OUTPUT.PUT_LINE('-> (Aviso) Error al borrar horarios: ' || SQLERRM);
+    END;
+
+    -- 6. FINALMENTE: Borrar la Tienda
+    DELETE FROM TIENDAS_LEGO WHERE id = v_id_tienda;
+    
+    v_count := SQL%ROWCOUNT;
+
+    IF v_count > 0 THEN
+        DBMS_OUTPUT.PUT_LINE('-> ¡EXITO TOTAL! Tienda ID ' || v_id_tienda || ' eliminada.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('-> La tienda ya había sido eliminada.');
+    END IF;
+
+    COMMIT;
+    
+    -- VERIFICACIÓN
+    DBMS_OUTPUT.PUT_LINE('------------------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('TIENDAS RESTANTES EN VENEZUELA:');
+    FOR r IN (
+        SELECT t.id, t.nombre 
+        FROM TIENDAS_LEGO t 
+        JOIN PAISES p ON t.id_pais = p.id 
+        WHERE UPPER(p.nombre) = 'VENEZUELA'
+    ) LOOP
+        DBMS_OUTPUT.PUT_LINE('ID: ' || r.id || ' | ' || r.nombre);
+    END LOOP;
+END;
+/
